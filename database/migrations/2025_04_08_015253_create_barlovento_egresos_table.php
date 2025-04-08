@@ -14,20 +14,14 @@ return new class extends Migration
         Schema::create('barlovento_egresos', function (Blueprint $table) {
             $table->id();
             $table->date('fecha');
-            $table->numeric('dte');
+            $table->integer('dte');
             $table->string('tipoDestino');
             $table->string('lugarDestino');
             $table->string('frigorificoDestino');
-            $table->string('tara');
-            $table->string('pesoBruto');
-            $table->string('origen_desbaste');
-            $table->string('destino_cantidad');
-            $table->string('destino_categoria');
-            $table->string('destino_pesoBruto');
-            $table->string('destino_tara');
-            $table->string('precioKg');
-            $table->string('precioFlete');
-            $table->string('precioOtrosGastos');
+            $table->float('tara');
+            $table->float('pesoBruto');
+            $table->string('categoria');
+            $table->integer('cantidad');
             $table->timestamps();
         });
     }

@@ -18,17 +18,17 @@ return new class extends Migration
             $table->string('dte');
             $table->string('origen_cantidad');
             $table->string('origen_categoria');
-            $table->string('origen_distancia');
-            $table->string('origen_pesoBruto');
-            $table->string('origen_pesoNeto');
-            $table->string('origen_desbaste');
-            $table->string('destino_cantidad');
+            $table->integer('origen_distancia');
+            $table->float('origen_pesoBruto');
+            $table->float('origen_pesoNeto');
+            $table->integer('origen_desbaste');
+            $table->integer('destino_cantidad');
             $table->string('destino_categoria');
-            $table->string('destino_pesoBruto');
-            $table->string('destino_tara');
-            $table->string('precioKg');
-            $table->string('precioFlete');
-            $table->string('precioOtrosGastos');
+            $table->float('destino_pesoBruto');
+            $table->float('destino_tara');
+            $table->float('precioKg');
+            $table->float('precioFlete');
+            $table->float('precioOtrosGastos');
             $table->timestamps();
         });
     }

@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('consignatarios', function (Blueprint $table) {
             $table->id();
+            $table->date('nombre');
+            $table->string('porcentajeComision');
             $table->timestamps();
         });
     }
