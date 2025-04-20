@@ -25,6 +25,8 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
+            ->brandName('Control de Balanza')
+            ->brandLogo(asset('images/barlovento-logo.png'))
             ->path('admin')
             ->navigation(false)
             ->login()
@@ -38,8 +40,11 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                // Widgets\AccountWidget::class,
+                // Widgets\FilamentInfoWidget::class,
+                \App\Filament\Resources\BarloventoResource\Widgets\BarloventoButton::class,
+                // \App\Filament\Resources\PaihuenResource\Widgets\PaihuenButton::class,
+
             ])
             ->middleware([
                 EncryptCookies::class,
