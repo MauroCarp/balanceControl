@@ -18,9 +18,11 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Illuminate\Contracts\Support\Htmlable;
 
 class AdminPanelProvider extends PanelProvider
 {
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -30,6 +32,8 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(asset('images/barlovento-logo.png'))
             ->path('admin')
             ->login()
+            ->darkMode(false)
+            // ->favicon(asset('images/favicon.png'))
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -65,18 +69,4 @@ class AdminPanelProvider extends PanelProvider
             ]);
     }
 
-    public function getHeader(): ?string
-    {
-        return 'Inicio'; // O el nombre que tú desees
-    }
-
-        public function getTitle(): ?string
-        {
-            return 'Control de Balanza'; // O el nombre que tú desees
-        }
-
-        public function getIcon(): ?string
-        {
-            return 'heroicon-o-clipboard-document-list'; // O el icono que tú desees
-        }   
 }
