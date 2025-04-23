@@ -32,7 +32,7 @@ class BarloventoIngresosResource extends Resource
                     ->label('Fecha')
                     ->required(),
                 Forms\Components\Select::make('consignatario')
-                    ->options(Consignatarios::pluck('name', 'id')->toArray())
+                    ->options(Consignatarios::pluck('nombre', 'id')->toArray())
                     ->label('Consignatario')
                     ->searchable()
                     ->preload()
@@ -43,11 +43,11 @@ class BarloventoIngresosResource extends Resource
                             ->required(),
                     ])
                     ->createOptionUsing(function (array $data): int {
-                        $consignatario = Consignatarios::create(['name' => $data['name']]);
+                        $consignatario = Consignatarios::create(['nombre' => $data['name']]);
                         return $consignatario->id;
                     }),
                 Forms\Components\Select::make('comisionista')
-                    ->options(Comisionistas::pluck('name', 'id')->toArray())
+                    ->options(Comisionistas::pluck('nombre', 'id')->toArray())
                     ->label('Comisionista')
                     ->searchable()
                     ->preload()

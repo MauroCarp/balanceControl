@@ -64,4 +64,19 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ]);
     }
+
+    public function getHeader(): ?string
+    {
+        return 'Inicio'; // O el nombre que tú desees
+    }
+
+        public function getTitle(): ?string
+        {
+            return 'Control de Balanza'; // O el nombre que tú desees
+        }
+
+        public function getIcon(): ?string
+        {
+            return 'heroicon-o-clipboard-document-list'; // O el icono que tú desees
+        }   
 }

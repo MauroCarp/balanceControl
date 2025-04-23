@@ -16,3 +16,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect('/admin');
 });
+// Route::get('/barlovento-ingresos/ingreso-barlovento', function () {
+//     return view('filament.resources.barlovento-ingresos-resource.pages.ingreso-barlovento');
+// })->name('ingreso-barlovento');
