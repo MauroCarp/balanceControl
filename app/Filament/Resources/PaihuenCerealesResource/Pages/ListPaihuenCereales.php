@@ -13,7 +13,19 @@ class ListPaihuenCereales extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+            ->label('Registrar Nuevo Ingreso de Cereal'), // Cambia este texto al deseado
         ];
+    }
+
+    public function getTitle(): string
+    {
+        return 'Ingresos de Cereal'; // Cambia este texto al título deseado
+
+    }
+
+    public function getBreadcrumb(): string
+    {
+        return 'Ingresos de Cereal'; // Cambia este texto al breadcrumb deseado
     }
 }

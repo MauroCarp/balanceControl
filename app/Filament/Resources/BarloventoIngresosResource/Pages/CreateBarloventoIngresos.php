@@ -12,12 +12,20 @@ class CreateBarloventoIngresos extends CreateRecord
 
     public function getTitle(): string
     {
-        return 'Nuevo ingreso de hacienda'; // Cambia este texto al título deseado
+        return 'Nuevo Ingreso de hacienda'; // Cambia este texto al título deseado
 
     }
 
     public function getBreadcrumb(): string
     {
         return 'Nuevo Ingreso de hacienda'; // Cambia este texto al breadcrumb deseado
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCreateFormAction(), // Mantiene el botón "Crear"
+            $this->getCancelFormAction(), // Mantiene el botón "Cancelar"
+        ];
     }
 }

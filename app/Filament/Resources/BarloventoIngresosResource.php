@@ -28,7 +28,7 @@ class BarloventoIngresosResource extends Resource
     {
         return $form
         ->schema([
-                Forms\Components\DateTimePicker::make('fecha')
+                Forms\Components\DatePicker::make('fecha')
                     ->label('Fecha')
                     ->required(),
                 Forms\Components\Select::make('consignatario')

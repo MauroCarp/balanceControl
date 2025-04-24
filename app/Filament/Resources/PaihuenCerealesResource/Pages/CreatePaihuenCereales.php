@@ -9,4 +9,23 @@ use Filament\Resources\Pages\CreateRecord;
 class CreatePaihuenCereales extends CreateRecord
 {
     protected static string $resource = PaihuenCerealesResource::class;
+
+    public function getTitle(): string
+    {
+        return 'Nuevo Ingreso de Cereal'; // Cambia este texto al título deseado
+
+    }
+
+    public function getBreadcrumb(): string
+    {
+        return 'Nuevo Ingreso de Cereal'; // Cambia este texto al breadcrumb deseado
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCreateFormAction(), // Mantiene el botón "Crear"
+            $this->getCancelFormAction(), // Mantiene el botón "Cancelar"
+        ];
+    }
 }
