@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('comisionistas', function (Blueprint $table) {
             $table->id();
-            $table->date('nombre');
+            $table->string('nombre');
             $table->string('porcentajeComision');
             $table->timestamps();
         });

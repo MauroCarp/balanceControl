@@ -13,17 +13,19 @@ return new class extends Migration
     {
         Schema::create('barlovento_ingresos', function (Blueprint $table) {
             $table->id();
+            $table->date('fecha');
             $table->string('consignatario');
             $table->string('comisionista');
             $table->string('dte');
             $table->string('origen_cantidad');
-            $table->string('origen_categoria');
+            $table->string('origen_terneros');
+            $table->string('origen_terneras');
             $table->integer('origen_distancia');
             $table->float('origen_pesoBruto');
             $table->float('origen_pesoNeto');
             $table->integer('origen_desbaste');
-            $table->integer('destino_cantidad');
-            $table->string('destino_categoria');
+            $table->integer('destino_terneros');
+            $table->integer('destino_terneras');
             $table->float('destino_pesoBruto');
             $table->float('destino_tara');
             $table->float('precioKg');

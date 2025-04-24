@@ -12,20 +12,29 @@ class CreateBarloventoIngresos extends CreateRecord
 
     public function getTitle(): string
     {
-        return 'Nuevo Ingreso de hacienda'; // Cambia este texto al título deseado
+        return 'Ingreso de Hacienda Origen'; // Cambia este texto al título deseado
 
     }
 
     public function getBreadcrumb(): string
     {
-        return 'Nuevo Ingreso de hacienda'; // Cambia este texto al breadcrumb deseado
+        return 'Ingreso de Hacienda Origen'; // Cambia este texto al breadcrumb deseado
     }
 
     protected function getFormActions(): array
     {
         return [
-            $this->getCreateFormAction(), // Mantiene el botón "Crear"
+            // $this->getCreateFormAction(), // Mantiene el botón "Crear"
+            Actions\Action::make('crearYContinuar') // Nombre del botón
+            ->label('Crear y Continuar') // Texto del botón
+            ->action(function () {
+                $this->form->save(); // Guarda el registro actual
+                return redirect()->route('filament.resources.barlovento-ingresos-resource.edit'); // Redirige a otro formulario
+            })
+            ->color('success') // Color del botón (opcional)
+            ->icon('heroicon-o-arrow-right'), // Ícono del botón (opcional)
             $this->getCancelFormAction(), // Mantiene el botón "Cancelar"
+
         ];
     }
 }

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('paihuen_cereales', function (Blueprint $table) {
             $table->id();
             $table->date('fecha');
-            $table->date('establecimiento');
+            $table->string('establecimiento');
             $table->string('cereal');
             $table->string('cartaPorte');
             $table->string('vendedor');
@@ -23,8 +23,10 @@ return new class extends Migration
             $table->integer('humedad');
             $table->integer('mermaHumedad');
             $table->string('calidad');
-            $table->string('materiasExtraneas');
+            $table->boolean('materiasExtraneas');
             $table->boolean('tierra');
+            $table->boolean('granosRotos');
+            $table->boolean('granosQuebrados');
             $table->string('destino');
             $table->string('observaciones');
             $table->timestamps();
