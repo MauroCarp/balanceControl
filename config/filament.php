@@ -68,6 +68,9 @@ return [
     | Livewire's standard 200ms delay.
     |
     */
+    'assets' => [
+        'js/balanceControl.js',
+    ],
 
     'livewire_loading_delay' => 'default',
 

@@ -14,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\Wizard;
 
 class BarloventoIngresosResource extends Resource
 {
@@ -28,181 +29,189 @@ class BarloventoIngresosResource extends Resource
     {
         return $form
         ->schema([
-            Forms\Components\Grid::make(3)
-                ->schema([
-
-                    Forms\Components\DatePicker::make('fecha')
-                        ->label('Fecha')
-                        ->required(),
-                    Forms\Components\Select::make('consignatario')
-                        ->options(Consignatarios::pluck('nombre', 'id')->toArray())
-                        ->label('Consignatario')
-                        ->searchable()
-                        ->preload()
-                        ->required()
-                        ->createOptionForm([
-                            Forms\Components\TextInput::make('consignatario')
-                                ->label('Consignatario')
-                                ->required(),
-                        ])
-                        ->createOptionUsing(function (array $data): int {
-                            $consignatario = Consignatarios::create(['nombre' => $data['name']]);
-                            return $consignatario->id;
-                        }),
-                    Forms\Components\Select::make('comisionista')
-                        ->options(Comisionistas::pluck('nombre', 'id')->toArray())
-                        ->label('Comisionista')
-                        ->searchable()
-                        ->preload()
-                        ->required()
-                        ->createOptionForm([
-                            Forms\Components\TextInput::make('comisionista')
-                                ->label('Comisionista')
-                                ->required(),
-                        ])
-                        ->createOptionUsing(function (array $data): int {
-                            $comisionista = Comisionistas::create(['name' => $data['name']]);
-                            return $comisionista->id;
-                        }),
-
-                    Forms\Components\Grid::make(4)
-                        ->schema([
-                            Forms\Components\TextInput::make('dte')
-                                ->label('Nº DTE')
-                                ->required()
-                                ->maxLength(191),
-                            Forms\Components\TextInput::make('origen_terneros')
-                                ->label('Terneros')
-                                ->required()
-                                ->numeric()
-                                ->reactive()
-                                ->maxLength(3),
-                            Forms\Components\TextInput::make('origen_terneras')
-                                ->label('Terneras')
-                                ->required()
-                                ->numeric()
-                                ->reactive()
-                                ->maxLength(3),
-                            Forms\Components\TextInput::make('cantidadTotal')
-                                ->label('Total Hacienda')
-                                ->dehydrated(false)
-                                ->disabled()
-                                ->afterStateUpdated(function (callable $set, $state, $get) {
-                                    $set('cantidadTotal', (float) $get('origen_terneros') + (float) $get('origen_terneras'));
-                                }),
-                            ]),
-                    Forms\Components\Grid::make(3)
-                        ->schema([
-                        Forms\Components\TextInput::make('origen_pesoBruto')
-                            ->label('Peso Bruto')
-                            ->required()
-                            ->maxLength(191)
-                            ->numeric()
-                            ->reactive(),
-                        Forms\Components\TextInput::make('origen_pesoNeto')
-                            ->label('Peso Neto')
-                            ->required()
-                            ->maxLength(191)
-                            ->numeric()
-                            ->reactive(),
-                        Forms\Components\TextInput::make('diferencia')
-                            ->label('Diferencia')
-                            ->disabled()
-                            ->dehydrated(false)
-                            ->reactive()
-                            ->afterStateUpdated(function (callable $set, $state, $get) {
-                                $set('diferencia', (float) $get('pesoBruto') - (float) $get('pesoNeto'));
-                            }),
-                        ]),
-                    Forms\Components\TextInput::make('origen_distancia')
-                        ->label('Distancia Recorrida')
-                        ->required()
-                        ->numeric()
-                        ->maxLength(191),
-                    Forms\Components\Select::make('origen_desbaste')
-                        ->options([2,3,4,5])
-                        ->label('% Desbaste')
-                        ->required(),
-                    Forms\Components\TextInput::make('pesoDesbaste')
-                        ->label('Peso Desbaste')
-                        ->disabled()
-                        ->dehydrated(false)
-                        ->reactive()
-                        ->afterStateUpdated(function (callable $set, $state, $get) {
-                            $set('pesoDesbaste', (float) $get('pesoNeto') - ((float) $get('pesoNeto') * ((float) $get('desbaste') / 100)));
-                        }),
-                    Forms\Components\Grid::make(3)
-                        ->schema([
-                            Forms\Components\TextInput::make('destino_terneros')
-                                ->label('Terneros')
-                                ->required()
-                                ->numeric()
-                                ->reactive()
-                                ->hidden(fn (string $context) => $context === 'create') // Oculta el campo solo en el formulario de creación
-                                ->maxLength(3),
-                            Forms\Components\TextInput::make('destino_terneras')
-                                ->label('Terneras')
-                                ->required()
-                                ->numeric()
-                                ->reactive()
-                                ->hidden(fn (string $context) => $context === 'create') // Oculta el campo solo en el formulario de creación
-                                ->maxLength(3),
-                            Forms\Components\TextInput::make('cantidadTotalDestino')
-                                ->label('Total Hacienda')
-                                ->dehydrated(false)
-                                ->disabled()
-                                ->hidden(fn (string $context) => $context === 'create') // Oculta el campo solo en el formulario de creación
-                                ->afterStateUpdated(function (callable $set, $state, $get) {
-                                    $set('cantidadTotalDestino', (float) $get('destino_terneros') + (float) $get('destino_terneras'));
-                                }),
-                            ]),
+            Wizard::make([
+                Wizard\Step::make('Ingreso Origen')
+                    ->schema([
                         Forms\Components\Grid::make(3)
                             ->schema([
-                            Forms\Components\TextInput::make('destino_pesoBruto')
-                                ->label('Peso Bruto')
-                                ->required()
-                                ->maxLength(191)
-                                ->numeric()
-                                ->hidden(fn (string $context) => $context === 'create') // Oculta el campo solo en el formulario de creación
-                                ->reactive(),
-                            Forms\Components\TextInput::make('destino_tara')
-                                ->label('Peso Neto')
-                                ->required()
-                                ->maxLength(191)
-                                ->hidden(fn (string $context) => $context === 'create') // Oculta el campo solo en el formulario de creación
-                                ->numeric()
-                                ->reactive(),
-                            Forms\Components\TextInput::make('diferencia')
-                                ->label('Diferencia')
-                                ->disabled()
-                                ->dehydrated(false)
-                                ->reactive()
-                                ->hidden(fn (string $context) => $context === 'create') // Oculta el campo solo en el formulario de creación
-                                ->afterStateUpdated(function (callable $set, $state, $get) {
-                                    $set('diferencia', (float) $get('pesoBruto') - (float) $get('pesoNeto'));
-                                }),
-                            ]),
-                        Forms\Components\TextInput::make('precioKg')
-                            ->label('Precio Kg')
-                            ->maxLength(25)
-                            ->hidden(fn (string $context) => $context === 'create') // Oculta el campo solo en el formulario de creación
-                            ->numeric(),
-                        Forms\Components\TextInput::make('precioFlete')
-                            ->label('Precio Flete')
-                            ->maxLength(25)
-                            ->hidden(fn (string $context) => $context === 'create') // Oculta el campo solo en el formulario de creación
-                            ->numeric(),
-                        Forms\Components\TextInput::make('precioOtrosGastos')
-                            ->label('Precio Otros Gastos')
-                            ->maxLength(25)
-                            ->hidden(fn (string $context) => $context === 'create') // Oculta el campo solo en el formulario de creación
-                            ->numeric(),
-                        
+                                Forms\Components\DatePicker::make('fecha')
+                                    ->label('Fecha')
+                                    ->required(),
+                                Forms\Components\Select::make('consignatario')
+                                    ->options(Consignatarios::pluck('nombre', 'id')->toArray())
+                                    ->label('Consignatario')
+                                    ->searchable()
+                                    ->preload()
+                                    ->required()
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('nombre')
+                                            ->label('Consignatario')
+                                            ->required(),
+                                    ])
+                                    ->createOptionUsing(function (array $data): int {
+                                        $consignatario = Consignatarios::create(['nombre' => $data['nombre']]);
+                                        return $consignatario->id;
+                                    }),
+                                Forms\Components\Select::make('comisionista')
+                                    ->options(Comisionistas::pluck('nombre', 'id')->toArray())
+                                    ->label('Comisionista')
+                                    ->searchable()
+                                    ->preload()
+                                    ->required()
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('comisionista')
+                                            ->label('Comisionista')
+                                            ->required(),
+                                    ])
+                                    ->createOptionUsing(function (array $data): int {
+                                        $comisionista = Comisionistas::create(['nombre' => $data['nombre']]);
+                                        return $comisionista->id;
+                                    }),
 
+                                Forms\Components\Grid::make(4)
+                                    ->schema([
+                                        Forms\Components\TextInput::make('dte')
+                                            ->label('Nº DTE')
+                                            ->required()
+                                            ->maxLength(191),
+                                        Forms\Components\TextInput::make('origen_terneros')
+                                            ->label('Terneros')
+                                            ->default(0)
+                                            ->id('origen_terneros')
+                                            ->required()
+                                            ->numeric()
+                                            ->maxLength(3),
+                                        Forms\Components\TextInput::make('origen_terneras')
+                                            ->label('Terneras')
+                                            ->required()
+                                            ->id('origen_terneras')
+                                            ->default(0)
+                                            ->numeric()
+                                            ->maxLength(3),
+                                        Forms\Components\TextInput::make('cantidadTotal')
+                                            ->label('Total Hacienda')
+                                            ->id('cantidadTotal')
+                                            ->dehydrated(false)
+                                            ->default(0)
+                                            ->disabled()
+                                        ]),
+                                Forms\Components\Grid::make(3)
+                                    ->schema([
+                                    Forms\Components\TextInput::make('origen_pesoBruto')
+                                        ->label('Peso Bruto')
+                                        ->required()
+                                        ->default(0)
+                                        ->id('origen_pesoBruto')
+                                        ->numeric(),
+                                    Forms\Components\TextInput::make('origen_pesoNeto')
+                                        ->label('Peso Neto')
+                                        ->required()
+                                        ->default(0)
+                                        ->id('origen_pesoNeto')
+                                        ->maxLength(191)
+                                        ->numeric(),
+                                    Forms\Components\TextInput::make('diferencia')
+                                        ->label('Diferencia')
+                                        ->disabled()
+                                        ->id('diferencia')
+                                        ->default(0)
+                                        ->dehydrated(false),
+                                    ]),
+                                Forms\Components\TextInput::make('origen_distancia')
+                                    ->label('Distancia Recorrida')
+                                    ->required()
+                                    ->numeric()
+                                    ->id('origen_distancia')
+                                    ->maxLength(191),
+                                Forms\Components\Select::make('origen_desbaste')
+                                    ->options([2=>2,3=>3,4=>4,5=>5])
+                                    ->label('% Desbaste')
+                                    ->required()
+                                    ->id('origen_desbaste')
+                                    ->afterStateUpdated(function (callable $set, $state, $get) {
+                                        $set('pesoDesbaste', (float) $get('origen_pesoNeto') - ((float) $get('origen_pesoNeto') * ((float) $get('origen_desbaste') / 100)));
+                                    }),
+                                Forms\Components\TextInput::make('pesoDesbaste')
+                                    ->label('Peso Desbaste')
+                                    ->disabled()
+                                    ->id('pesoDesbaste')
+                                    ->default(0)
+                                    ->dehydrated(false)
+                                    ->reactive(),
+                            ])
+                    ]),
+                    Wizard\Step::make('Ingreso Destino')
+                        ->schema([
+                            Forms\Components\Grid::make(3)
+                                ->schema([
+                                    Forms\Components\TextInput::make('destino_terneros')
+                                        ->label('Terneros')
+                                        ->required()
+                                        ->default(0)
+                                        ->numeric()
+                                        ->maxLength(3)
+                                        ->id('destino_terneros'),
+                                    Forms\Components\TextInput::make('destino_terneras')
+                                        ->label('Terneras')
+                                        ->required()
+                                        ->numeric()
+                                        ->default(0)
+                                        ->maxLength(3)
+                                        ->id('destino_terneras'),
+                                    Forms\Components\TextInput::make('cantidadTotalDestino')
+                                        ->label('Total Hacienda')
+                                        ->default(0)
+                                        ->dehydrated(false)
+                                        ->disabled()
+                                        ->id('cantidadTotalDestino'),
+                                ]),
+                            Forms\Components\Grid::make(3)
+                                ->schema([
+                                    Forms\Components\TextInput::make('destino_pesoBruto')
+                                        ->label('Peso Bruto')
+                                        ->required()
+                                        ->maxLength(191)
+                                        ->default(0)
+                                        ->numeric()
+                                        ->id('destino_pesoBruto'),
+                                    Forms\Components\TextInput::make('destino_tara')
+                                        ->label('Peso Neto')
+                                        ->required()
+                                        ->maxLength(191)
+                                        ->default(0)
+                                        ->numeric()
+                                        ->id('destino_tara'),
+                                    Forms\Components\TextInput::make('destino_diferencia')
+                                        ->label('Diferencia')
+                                        ->disabled()
+                                        ->dehydrated(false)
+                                        ->default(0)
+                                        ->reactive()
+                                        ->id('destino_diferencia')
+                                ]),
+                        ]),
+                    Wizard\Step::make('Ingreso Gastos')
+                        ->schema([
+                            Forms\Components\TextInput::make('precioKg')
+                                ->label('Precio Kg')
+                                ->maxLength(25)
+                                ->hidden(fn (string $context) => $context === 'create') // Oculta el campo solo en el formulario de creación
+                                ->numeric(),
+                            Forms\Components\TextInput::make('precioFlete')
+                                ->label('Precio Flete')
+                                ->maxLength(25)
+                                ->hidden(fn (string $context) => $context === 'create') // Oculta el campo solo en el formulario de creación
+                                ->numeric(),
+                            Forms\Components\TextInput::make('precioOtrosGastos')
+                                ->label('Precio Otros Gastos')
+                                ->maxLength(25)
+                                ->hidden(fn (string $context) => $context === 'create') // Oculta el campo solo en el formulario de creación
+                                ->numeric(),
+                        ])->hidden(fn (string $context) => $context === 'create'), 
+            ])
+            ->columnSpan('full')
 
-                ])
-
-            ]);
+        ]);
     }
 
     public static function table(Table $table): Table
