@@ -24,7 +24,7 @@ class CreateBarloventoIngresos extends CreateRecord
     protected function getFormActions(): array
     {
         return [
-            // // $this->getCreateFormAction(), // Mantiene el botón "Crear"
+            $this->getCreateFormAction(), // Mantiene el botón "Crear"
             // Actions\Action::make('crearYContinuar') // Nombre del botón
             // ->label('Crear y Continuar') // Texto del botón
             // ->action(function () {

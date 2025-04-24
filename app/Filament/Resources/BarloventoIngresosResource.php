@@ -139,76 +139,74 @@ class BarloventoIngresosResource extends Resource
                                     ->dehydrated(false)
                                     ->reactive(),
                             ])
+                                ]),
+                Wizard\Step::make('Ingreso Destino')
+                    ->schema([
+                        Forms\Components\Grid::make(3)
+                            ->schema([
+                                Forms\Components\TextInput::make('destino_terneros')
+                                    ->label('Terneros')
+                                    ->required()
+                                    ->default(0)
+                                    ->numeric()
+                                    ->maxLength(3)
+                                    ->id('destino_terneros'),
+                                Forms\Components\TextInput::make('destino_terneras')
+                                    ->label('Terneras')
+                                    ->required()
+                                    ->numeric()
+                                    ->default(0)
+                                    ->maxLength(3)
+                                    ->id('destino_terneras'),
+                                Forms\Components\TextInput::make('cantidadTotalDestino')
+                                    ->label('Total Hacienda')
+                                    ->default(0)
+                                    ->dehydrated(false)
+                                    ->disabled()
+                                    ->id('cantidadTotalDestino'),
+                            ]),
+                        Forms\Components\Grid::make(3)
+                            ->schema([
+                                Forms\Components\TextInput::make('destino_pesoBruto')
+                                    ->label('Peso Bruto')
+                                    ->required()
+                                    ->maxLength(191)
+                                    ->default(0)
+                                    ->numeric()
+                                    ->id('destino_pesoBruto'),
+                                Forms\Components\TextInput::make('destino_tara')
+                                    ->label('Peso Neto')
+                                    ->required()
+                                    ->maxLength(191)
+                                    ->default(0)
+                                    ->numeric()
+                                    ->id('destino_tara'),
+                                Forms\Components\TextInput::make('destino_diferencia')
+                                    ->label('Diferencia')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->default(0)
+                                    ->reactive()
+                                    ->id('destino_diferencia')
+                            ]),
                     ]),
-                    Wizard\Step::make('Ingreso Destino')
-                        ->schema([
-                            Forms\Components\Grid::make(3)
-                                ->schema([
-                                    Forms\Components\TextInput::make('destino_terneros')
-                                        ->label('Terneros')
-                                        ->required()
-                                        ->default(0)
-                                        ->numeric()
-                                        ->maxLength(3)
-                                        ->id('destino_terneros'),
-                                    Forms\Components\TextInput::make('destino_terneras')
-                                        ->label('Terneras')
-                                        ->required()
-                                        ->numeric()
-                                        ->default(0)
-                                        ->maxLength(3)
-                                        ->id('destino_terneras'),
-                                    Forms\Components\TextInput::make('cantidadTotalDestino')
-                                        ->label('Total Hacienda')
-                                        ->default(0)
-                                        ->dehydrated(false)
-                                        ->disabled()
-                                        ->id('cantidadTotalDestino'),
-                                ]),
-                            Forms\Components\Grid::make(3)
-                                ->schema([
-                                    Forms\Components\TextInput::make('destino_pesoBruto')
-                                        ->label('Peso Bruto')
-                                        ->required()
-                                        ->maxLength(191)
-                                        ->default(0)
-                                        ->numeric()
-                                        ->id('destino_pesoBruto'),
-                                    Forms\Components\TextInput::make('destino_tara')
-                                        ->label('Peso Neto')
-                                        ->required()
-                                        ->maxLength(191)
-                                        ->default(0)
-                                        ->numeric()
-                                        ->id('destino_tara'),
-                                    Forms\Components\TextInput::make('destino_diferencia')
-                                        ->label('Diferencia')
-                                        ->disabled()
-                                        ->dehydrated(false)
-                                        ->default(0)
-                                        ->reactive()
-                                        ->id('destino_diferencia')
-                                ]),
-                        ]),
-                    Wizard\Step::make('Ingreso Gastos')
-                        ->schema([
-                            Forms\Components\TextInput::make('precioKg')
-                                ->label('Precio Kg')
-                                ->maxLength(25)
-                                ->hidden(fn (string $context) => $context === 'create') // Oculta el campo solo en el formulario de creación
-                                ->numeric(),
-                            Forms\Components\TextInput::make('precioFlete')
-                                ->label('Precio Flete')
-                                ->maxLength(25)
-                                ->hidden(fn (string $context) => $context === 'create') // Oculta el campo solo en el formulario de creación
-                                ->numeric(),
-                            Forms\Components\TextInput::make('precioOtrosGastos')
-                                ->label('Precio Otros Gastos')
-                                ->maxLength(25)
-                                ->hidden(fn (string $context) => $context === 'create') // Oculta el campo solo en el formulario de creación
-                                ->numeric(),
-                        ])->hidden(fn (string $context) => $context === 'create'), 
+                Wizard\Step::make('Ingreso Gastos')
+                    ->schema([
+                        Forms\Components\TextInput::make('precioKg')
+                            ->label('Precio Kg')
+                            ->maxLength(25)
+                            ->numeric(),
+                        Forms\Components\TextInput::make('precioFlete')
+                            ->label('Precio Flete')
+                            ->maxLength(25)
+                            ->numeric(),
+                        Forms\Components\TextInput::make('precioOtrosGastos')
+                            ->label('Precio Otros Gastos')
+                            ->maxLength(25)
+                            ->numeric(),
+                    ])->hidden(fn (string $context) => $context === 'create'), 
             ])
+            ->skippable()
             ->columnSpan('full')
 
         ]);

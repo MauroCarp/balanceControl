@@ -85,6 +85,5 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create') {
 
     })
 
-
 }
 
