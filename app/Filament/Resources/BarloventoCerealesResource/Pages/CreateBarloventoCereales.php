@@ -21,4 +21,12 @@ class CreateBarloventoCereales extends CreateRecord
         return 'Nuevo Ingreso de Cereal'; // Cambia este texto al breadcrumb deseado
     }
 
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCreateFormAction(), // Mantiene el botón "Crear"
+            $this->getCancelFormAction(), // Mantiene el botón "Cancelar"
+        ];
+    }
+
 }
