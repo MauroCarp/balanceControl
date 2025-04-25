@@ -39,8 +39,8 @@
             <x-filament::button tag="a" 
             href="/admin/barlovento-cereales/create" 
             id="btnIngresoCereal"
-            class="w-full" style="font-size:2em;padding: 1em 1em;line-height: 1.2em;">
-            Ingreso Cereal / Otro Ingreso
+            class="w-full" style="text-align:center;font-size:2em;padding: 1em 1em;line-height: 1.2em;">
+            Ingreso Cereal <br> Otro Ingreso
             </x-filament::button>
         </div>
     </div>

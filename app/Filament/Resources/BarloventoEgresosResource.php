@@ -77,34 +77,32 @@ class BarloventoEgresosResource extends Resource
                             ]),
                         Forms\Components\Grid::make(4)
                             ->schema([
-                                Forms\Components\TextInput::make('pesoTara')
-                                    ->label('Tara')
-                                    ->required()
-                                    ->maxLength(191)
-                                    ->reactive(),
                                 Forms\Components\TextInput::make('pesoBruto')
                                     ->label('Peso Bruto')
                                     ->required()
+                                    ->default(0)
                                     ->maxLength(191)
-                                    ->reactive(),
+                                    ->id('pesoBruto'),
+                                Forms\Components\TextInput::make('pesoTara')
+                                    ->label('Tara')
+                                    ->required()
+                                    ->default(0)
+                                    ->maxLength(191)
+                                    ->id('pesoTara'),
                                 Forms\Components\TextInput::make('pesoNeto')
                                     ->label('Peso Neto')
                                     ->required()
+                                    ->default(0)
                                     ->maxLength(191)
                                     ->disabled()
                                     ->dehydrated(false)
-                                    ->reactive()
-                                    ->afterStateUpdated(function (callable $set, $state, $get) {
-                                        $set('pesoNeto', (float) $get('pesoTara') - (float) $get('PesoNeto'));
-                                    }),
+                                    ->id('pesoNeto'),
                                 Forms\Components\TextInput::make('pesoNetoDesbastado')
                                     ->label('Peso Neto Desbastado')
+                                    ->default(0)
                                     ->disabled()
                                     ->dehydrated(false)
-                                    ->reactive()
-                                    ->afterStateUpdated(function (callable $set, $state, $get) {
-                                        $set('pesoNetoDesbastado', (float) $get('pesoNeto') - ((float) $get('pesoNeto') * ((float) 8 / 100)));
-                                    }),
+                                    ->id('pesoNetoDesbastado'),
                             ]),
                         Forms\Components\TextInput::make('novillos')
                             ->label('Novillos')

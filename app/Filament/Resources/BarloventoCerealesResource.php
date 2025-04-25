@@ -40,6 +40,7 @@ class BarloventoCerealesResource extends Resource
                                 ])
                             ->default('Maiz')
                             ->required()
+                            ->id('cereal')
                             ->searchable() // Permite buscar o escribir valores personalizados
                             ->dehydrated(false)
                             ->createOptionForm([
@@ -60,52 +61,46 @@ class BarloventoCerealesResource extends Resource
                         Forms\Components\Grid::make(3)
                             ->schema([
                                 Forms\Components\TextInput::make('pesoBruto')
+                                    ->id('pesoBruto')
                                     ->label('Peso Bruto')
                                     ->required()
+                                    ->default(0)
                                     ->maxLength(191)
-                                    ->numeric()
-                                    ->reactive(),
+                                    ->numeric(),
                                 Forms\Components\TextInput::make('pesoTara')
+                                    ->id('pesoTara')
                                     ->label('Tara')
                                     ->required()
+                                    ->default(0)
                                     ->maxLength(191)
-                                    ->numeric()
-                                    ->reactive(),
+                                    ->numeric(),
                                 Forms\Components\TextInput::make('pesoNeto')
+                                    ->id('pesoNeto')
                                     ->label('Peso Neto')
-                                    ->required()
                                     ->maxLength(191)
                                     ->disabled()
-                                    ->dehydrated(false)
-                                    ->reactive()
-                                    ->afterStateUpdated(function (callable $set, $state, $get) {
-                                        $set('pesoNeto', (float) $get('pesoTara') - (float) $get('PesoNeto'));
-                                    }),
+                                    ->dehydrated(false),
                             ]),
                         Forms\Components\Grid::make(3)
                             ->schema([
                                 Forms\Components\TextInput::make('humedad')
+                                    ->id('humedad')
                                     ->label('% de Humedad')
                                     ->numeric()
-                                    ->required(),
+                                    ->required()
+                                    ->default(0),
                                 Forms\Components\TextInput::make('mermaHumedad')
+                                    ->id('mermaHumedad')
                                     ->label('% Merma de Humedad')
                                     ->disabled()
                                     ->dehydrated(false)
-                                    ->reactive()
-                                    // ->afterStateUpdated(function (callable $set, $state, $get) {
-                                    //     $set('pesoNetoDesbastado', (float) $get('pesoNeto') - ((float) $get('pesoNeto') * ((float) 8 / 100)));
-                                    // }),
-                                    ,
+                                    ->default(0),
                                 Forms\Components\TextInput::make('pesoNetoHumedad')
+                                    ->id('pesoNetoHumedad')
                                     ->label('Peso Neto de Humedad')
                                     ->disabled()
                                     ->dehydrated(false)
-                                    ->reactive()
-                                    // ->afterStateUpdated(function (callable $set, $state, $get) {
-                                    //     $set('pesoNetoDesbastado', (float) $get('pesoNeto') - ((float) $get('pesoNeto') * ((float) 8 / 100)));
-                                    // }),
-                                    ,
+                                    ->default(0),
                             ]),
                         Forms\Components\Checkbox::make('granosRotos')
                             ->label('Granos Dañados'),

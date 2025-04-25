@@ -17,4 +17,4 @@ Route::get('/', function () {
     return redirect('/admin');
 });
 
-
+Route::post('/merma-humedad', [MermaHumedadController::class, 'getMermaHumedad']);

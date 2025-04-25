@@ -121,20 +121,19 @@ if(getUrlAfterAdmin() === 'barlovento-egresos/create') {
 
     let novillos = document.getElementById('novillos')
     let vaquillonas = document.getElementById('vaquillonas')
-
+    
     novillos.addEventListener('change', function() {
             let resultado = Number(novillos.value) + Number(vaquillonas.value);
-            document.getElementById('cantidadTotal').value = resultado;
+            document.getElementById('cantidad').value = resultado;
     })
 
     vaquillonas.addEventListener('change', function() {
         let resultado = Number(novillos.value) + Number(vaquillonas.value);
-        document.getElementById('cantidadTotal').value = resultado;
+        document.getElementById('cantidad').value = resultado;
     })
 
     let pesoBruto = document.getElementById('pesoBruto')
-    let tara = document.getElementById('tara')
-    let origen_desbaste = document.getElementById('origen_desbaste')
+    let tara = document.getElementById('pesoTara')
 
     pesoBruto.addEventListener('change', function() {
             let resultado = Number(pesoBruto.value) - Number(tara.value);
@@ -145,52 +144,79 @@ if(getUrlAfterAdmin() === 'barlovento-egresos/create') {
         let resultado = Number(pesoBruto.value) - Number(tara.value);
         document.getElementById('pesoNeto').value = resultado;
 
-        if(origen_desbaste.value != '') {
+        // let resultadoDesbaste = (Number(origen_pesoNeto.value) - (Number(origen_pesoNeto.value) * (Number(origen_desbaste.value) / 100)));
+
+        // document.getElementById('pesoNetoDesbastado').value = resultadoDesbaste;
+
+    })
+
+
+}
+
+///*********************     
+//                          CREATE CEREALES       
+//                                   ************************/
+
+if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() === 'paihuen-cereales/create') {
+
+    let pesoBruto = document.getElementById('pesoBruto')
+    let tara = document.getElementById('pesoTara')
+
+    pesoBruto.addEventListener('change', function() {
+        let resultado = Number(pesoBruto.value) - Number(tara.value);
+            document.getElementById('pesoNeto').value = resultado;
+
+    })
+
+    tara.addEventListener('change', function() {
+
+        let resultado = Number(pesoBruto.value) - Number(tara.value);
+        document.getElementById('pesoNeto').value = resultado;
+
+    })
+
+    let humedad = document.getElementById('humedad')
+
+    humedad.addEventListener('change', function() {
             
-            let resultado = (Number(origen_pesoNeto.value) - (Number(origen_pesoNeto.value) * (Number(origen_desbaste.value) / 100)));
+            fetch('/merma-humedad', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    cereal: document.getElementById('cereal').value,
+                    humedad: Number(humedad.value),
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
 
-            document.getElementById('pesoDesbaste').value = resultado;
-        }
+                    if (data.merma !== undefined) {
+                        
+                        document.getElementById('mermaHumedad').value = data.merma;
+                        
+                        let pesoNeto = Number(document.getElementById('pesoNeto').value);
+                        
+                        let resultado = (Number(pesoNeto) - (Number(pesoNeto) * (Number(data.merma) / 100)));
+            
+                        document.getElementById('pesoNetoHumedad').value = resultado;
 
-    })
+                    } else {
+                        console.error('No se encontró el valor de merma.');
+                    }
+                })
+                .catch(error => console.error('Error al consultar la base de datos:', error));
 
-    origen_desbaste.addEventListener('change', function() {
 
-        if(origen_desbaste.value != '') {
 
-            let resultado = (Number(origen_pesoNeto.value) - (Number(origen_pesoNeto.value) * (Number(origen_desbaste.value) / 100)));
-
-            document.getElementById('pesoDesbaste').value = resultado;
-        }
-
-    })
-
-    let destino_terneros = document.getElementById('destino_terneros')
-    let destino_terneras = document.getElementById('destino_terneras')
-
-    destino_terneros.addEventListener('change', function() {
-            let resultado = Number(destino_terneros.value) + Number(destino_terneras.value);
-            document.getElementById('cantidadTotalDestino').value = resultado;
-    })
-
-    destino_terneras.addEventListener('change', function() {
-        let resultado = Number(destino_terneros.value) + Number(destino_terneras.value);
-        document.getElementById('cantidadTotalDestino').value = resultado;
-    })
-
-    let destino_pesoBruto = document.getElementById('destino_pesoBruto')
-    let destino__tara = document.getElementById('destino_tara')
-
-    destino_pesoBruto.addEventListener('change', function() {
-            let resultado = Number(destino_pesoBruto.value) - Number(destino__tara.value);
-            document.getElementById('destino_diferencia').value = resultado;
-    })
-
-    destino__tara.addEventListener('change', function() {
-        let resultado = Number(destino_pesoBruto.value) - Number(destino__tara.value);
-        document.getElementById('destino_diferencia').value = resultado;
 
     })
+
+
+
+
+
 
 }
 
