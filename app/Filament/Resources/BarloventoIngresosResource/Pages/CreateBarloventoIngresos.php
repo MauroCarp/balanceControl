@@ -24,16 +24,7 @@ class CreateBarloventoIngresos extends CreateRecord
     protected function getFormActions(): array
     {
         return [
-            $this->getCreateFormAction(), // Mantiene el botón "Crear"
-            // Actions\Action::make('crearYContinuar') // Nombre del botón
-            // ->label('Crear y Continuar') // Texto del botón
-            // ->action(function () {
-            //     $this->form->save(); // Guarda el registro actual
-            //     return redirect()->route('filament.resources.barlovento-ingresos-resource.edit'); // Redirige a otro formulario
-            // })
-            // ->color('success') // Color del botón (opcional)
-            // ->icon('heroicon-o-arrow-right'), // Ícono del botón (opcional)
-            // $this->getCancelFormAction(), // Mantiene el botón "Cancelar"
+            $this->getCreateFormAction()->label('Guardar'), // Cambia el texto del botón a "Guardar"
 
         ];
     }

@@ -206,7 +206,6 @@ class BarloventoIngresosResource extends Resource
                             ->numeric(),
                     ])->hidden(fn (string $context) => $context === 'create'), 
             ])
-            ->skippable()
             ->columnSpan('full')
 
         ]);

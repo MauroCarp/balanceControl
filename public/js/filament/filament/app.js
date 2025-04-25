@@ -8,6 +8,9 @@ function getUrlAfterAdmin() {
     }
     return '';
 }
+///*********************     
+//                          INDEX        
+//                                   ************************/
 
 if(getUrlAfterAdmin() === '') {
 
@@ -26,17 +29,11 @@ if(getUrlAfterAdmin() === '') {
             btnsBarlovento.style.display = 'block';
         })
 
-    }, 1000);
+    }, 2500);
 }
 
 ///*********************     
-//                          INDEX        
-//                                   ************************/
-
-
-
-///*********************     
-//                          CREATE        
+//                          CREATE INGRESOS       
 //                                   ************************/
 
 if(getUrlAfterAdmin() === 'barlovento-ingresos/create') {
@@ -66,6 +63,87 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create') {
     origen_pesoNeto.addEventListener('change', function() {
         let resultado = Number(origen_pesoBruto.value) - Number(origen_pesoNeto.value);
         document.getElementById('diferencia').value = resultado;
+
+        if(origen_desbaste.value != '') {
+            
+            let resultado = (Number(origen_pesoNeto.value) - (Number(origen_pesoNeto.value) * (Number(origen_desbaste.value) / 100)));
+
+            document.getElementById('pesoDesbaste').value = resultado;
+        }
+
+    })
+
+    origen_desbaste.addEventListener('change', function() {
+
+        if(origen_desbaste.value != '') {
+
+            let resultado = (Number(origen_pesoNeto.value) - (Number(origen_pesoNeto.value) * (Number(origen_desbaste.value) / 100)));
+
+            document.getElementById('pesoDesbaste').value = resultado;
+        }
+
+    })
+
+    let destino_terneros = document.getElementById('destino_terneros')
+    let destino_terneras = document.getElementById('destino_terneras')
+
+    destino_terneros.addEventListener('change', function() {
+            let resultado = Number(destino_terneros.value) + Number(destino_terneras.value);
+            document.getElementById('cantidadTotalDestino').value = resultado;
+    })
+
+    destino_terneras.addEventListener('change', function() {
+        let resultado = Number(destino_terneros.value) + Number(destino_terneras.value);
+        document.getElementById('cantidadTotalDestino').value = resultado;
+    })
+
+    let destino_pesoBruto = document.getElementById('destino_pesoBruto')
+    let destino__tara = document.getElementById('destino_tara')
+
+    destino_pesoBruto.addEventListener('change', function() {
+            let resultado = Number(destino_pesoBruto.value) - Number(destino__tara.value);
+            document.getElementById('destino_diferencia').value = resultado;
+    })
+
+    destino__tara.addEventListener('change', function() {
+        let resultado = Number(destino_pesoBruto.value) - Number(destino__tara.value);
+        document.getElementById('destino_diferencia').value = resultado;
+
+    })
+
+}
+
+///*********************     
+//                          CREATE EGRESOS       
+//                                   ************************/
+
+if(getUrlAfterAdmin() === 'barlovento-egresos/create') {
+
+    let novillos = document.getElementById('novillos')
+    let vaquillonas = document.getElementById('vaquillonas')
+
+    novillos.addEventListener('change', function() {
+            let resultado = Number(novillos.value) + Number(vaquillonas.value);
+            document.getElementById('cantidadTotal').value = resultado;
+    })
+
+    vaquillonas.addEventListener('change', function() {
+        let resultado = Number(novillos.value) + Number(vaquillonas.value);
+        document.getElementById('cantidadTotal').value = resultado;
+    })
+
+    let pesoBruto = document.getElementById('pesoBruto')
+    let tara = document.getElementById('tara')
+    let origen_desbaste = document.getElementById('origen_desbaste')
+
+    pesoBruto.addEventListener('change', function() {
+            let resultado = Number(pesoBruto.value) - Number(tara.value);
+            document.getElementById('pesoNeto').value = resultado;
+    })
+
+    tara.addEventListener('change', function() {
+        let resultado = Number(pesoBruto.value) - Number(tara.value);
+        document.getElementById('pesoNeto').value = resultado;
 
         if(origen_desbaste.value != '') {
             
