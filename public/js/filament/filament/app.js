@@ -175,39 +175,40 @@ if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() ===
 
     })
 
+
     let humedad = document.getElementById('humedad')
 
     humedad.addEventListener('change', function() {
-            
+            console.log(document.getElementById('cereal').value)
+            console.log(document.getElementById('humedad').value)
             fetch('/merma-humedad', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
                 body: JSON.stringify({
                     cereal: document.getElementById('cereal').value,
-                    humedad: Number(humedad.value),
-                }),
-            })
-                .then(response => response.json())
-                .then(data => {
-
-                    if (data.merma !== undefined) {
-                        
-                        document.getElementById('mermaHumedad').value = data.merma;
-                        
-                        let pesoNeto = Number(document.getElementById('pesoNeto').value);
-                        
-                        let resultado = (Number(pesoNeto) - (Number(pesoNeto) * (Number(data.merma) / 100)));
-            
-                        document.getElementById('pesoNetoHumedad').value = resultado;
-
-                    } else {
-                        console.error('No se encontró el valor de merma.');
-                    }
+                    humedad: Number(document.getElementById('humedad').value)
                 })
-                .catch(error => console.error('Error al consultar la base de datos:', error));
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.merma !== undefined) {
+                    document.getElementById('mermaHumedad').value = data.merma;
 
+                    let pesoNeto = Number(document.getElementById('pesoNeto').value);
+
+                    let resultado = (pesoNeto - (pesoNeto * (data.merma / 100)));
+
+                    document.getElementById('pesoNetoHumedad').value = resultado;
+                } else {
+                    console.error('No se encontró el valor de merma.');
+                }
+            })
+            .catch(error => {
+                console.error('Error al consultar la base de datos:', error);
+            });
 
 
 
