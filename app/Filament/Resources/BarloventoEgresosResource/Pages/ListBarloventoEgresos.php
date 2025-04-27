@@ -14,7 +14,7 @@ class ListBarloventoEgresos extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-            ->label('Registrar Nuevo Egreso'), // Cambia este texto al deseado
+            ->label('Nuevo Egreso'), // Cambia este texto al deseado
         ];
     }
 

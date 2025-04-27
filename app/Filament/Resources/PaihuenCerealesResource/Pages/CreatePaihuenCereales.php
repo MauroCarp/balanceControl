@@ -24,7 +24,9 @@ class CreatePaihuenCereales extends CreateRecord
     protected function getFormActions(): array
     {
         return [
-            $this->getCreateFormAction(), // Mantiene el botón "Crear"
+            $this->getCreateFormAction()->after(function () {
+                $this->redirect($this->getResource()::getUrl('index'));
+            }), // Mantiene el botón "Crear" y redirige a la lista después de crear
             $this->getCancelFormAction(), // Mantiene el botón "Cancelar"
         ];
     }

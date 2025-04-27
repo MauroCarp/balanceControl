@@ -14,7 +14,7 @@ class ListPaihuenCereales extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-            ->label('Registrar Nuevo Ingreso de Cereal'), // Cambia este texto al deseado
+            ->label('Nuevo Ingreso de Cereal'), // Cambia este texto al deseado
         ];
     }
 

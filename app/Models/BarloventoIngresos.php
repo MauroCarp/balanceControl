@@ -8,4 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class BarloventoIngresos extends Model
 {
     use HasFactory;
+
+    protected $guarded = [];
+
 }

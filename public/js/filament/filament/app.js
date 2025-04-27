@@ -8,6 +8,39 @@ function getUrlAfterAdmin() {
     }
     return '';
 }
+
+let getMermaHumedad = () => {
+
+    fetch('/merma-humedad', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            cereal: document.getElementById('cereal').value,
+            humedad: Number(document.getElementById('humedad').value)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.merma !== undefined) {
+            document.getElementById('mermaHumedad').value = data.merma;
+
+            let pesoNeto = Number(document.getElementById('pesoNeto').value);
+
+            let resultado = (pesoNeto - (pesoNeto * (data.merma / 100)));
+
+            document.getElementById('pesoNetoHumedad').value = resultado;
+        } else {
+            console.error('No se encontró el valor de merma.');
+        }
+    })
+    .catch(error => {
+        console.error('Error al consultar la base de datos:', error);
+    });
+
+}
 ///*********************     
 //                          INDEX        
 //                                   ************************/
@@ -36,11 +69,11 @@ if(getUrlAfterAdmin() === '') {
 //                          CREATE INGRESOS       
 //                                   ************************/
 
-if(getUrlAfterAdmin() === 'barlovento-ingresos/create') {
+if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')[0] === 'barlovento-ingresos'))) {
 
     let origen_terneros = document.getElementById('origen_terneros')
     let origen_terneras = document.getElementById('origen_terneras')
-
+    
     origen_terneros.addEventListener('change', function() {
             let resultado = Number(origen_terneros.value) + Number(origen_terneras.value);
             document.getElementById('cantidadTotal').value = resultado;
@@ -61,6 +94,7 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create') {
     })
 
     origen_pesoNeto.addEventListener('change', function() {
+
         let resultado = Number(origen_pesoBruto.value) - Number(origen_pesoNeto.value);
         document.getElementById('diferencia').value = resultado;
 
@@ -110,6 +144,26 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create') {
         document.getElementById('destino_diferencia').value = resultado;
 
     })
+
+    if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')[0] === 'barlovento-ingresos')) {
+    
+        setTimeout(() => {
+        let resultado = Number(origen_terneros.value) + Number(origen_terneras.value);
+        document.getElementById('cantidadTotal').value = resultado;
+
+        resultado = Number(origen_pesoBruto.value) - Number(origen_pesoNeto.value);
+        document.getElementById('diferencia').value = resultado;
+
+        resultado = (Number(origen_pesoNeto.value) - (Number(origen_pesoNeto.value) * (Number(origen_desbaste.value) / 100)));
+        document.getElementById('pesoDesbaste').value = resultado;
+
+        resultado = Number(destino_terneros.value) + Number(destino_terneras.value);
+        document.getElementById('cantidadTotalDestino').value = resultado;
+        
+        resultado = Number(destino_pesoBruto.value) - Number(destino__tara.value);
+        document.getElementById('destino_diferencia').value = resultado;
+        }, 1000);
+    }
 
 }
 
@@ -165,6 +219,61 @@ if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() ===
     pesoBruto.addEventListener('change', function() {
         let resultado = Number(pesoBruto.value) - Number(tara.value);
             document.getElementById('pesoNeto').value = resultado;
+            getMermaHumedad()
+
+
+    })
+
+    tara.addEventListener('change', function() {
+
+        let resultado = Number(pesoBruto.value) - Number(tara.value);
+        document.getElementById('pesoNeto').value = resultado;
+        getMermaHumedad()
+
+
+    })
+
+
+    let humedad = document.getElementById('humedad')
+
+    humedad.addEventListener('change', function() {
+            getMermaHumedad()
+    })
+
+
+
+
+
+
+}
+///*********************     
+//                          EDIT INGRESOS
+//                                   ************************/
+
+///*********************     
+//                          EDIT CEREALES       
+//                                   ************************/
+
+
+if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')[0] === 'barlovento-cereales' || getUrlAfterAdmin().split('/')[0] === 'paihuen-cereales')) {
+
+    
+    let pesoBruto = document.getElementById('pesoBruto')
+    let tara = document.getElementById('pesoTara')
+
+    setTimeout(() => {
+
+        let resultado = Number(pesoBruto.value) - Number(tara.value);
+
+        document.getElementById('pesoNeto').value = resultado;
+
+        getMermaHumedad()
+
+    }, 1000);
+
+    pesoBruto.addEventListener('change', function() {
+        let resultado = Number(pesoBruto.value) - Number(tara.value);
+            document.getElementById('pesoNeto').value = resultado;
 
     })
 
@@ -179,45 +288,10 @@ if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() ===
     let humedad = document.getElementById('humedad')
 
     humedad.addEventListener('change', function() {
-            console.log(document.getElementById('cereal').value)
-            console.log(document.getElementById('humedad').value)
-            fetch('/merma-humedad', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    cereal: document.getElementById('cereal').value,
-                    humedad: Number(document.getElementById('humedad').value)
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.merma !== undefined) {
-                    document.getElementById('mermaHumedad').value = data.merma;
-
-                    let pesoNeto = Number(document.getElementById('pesoNeto').value);
-
-                    let resultado = (pesoNeto - (pesoNeto * (data.merma / 100)));
-
-                    document.getElementById('pesoNetoHumedad').value = resultado;
-                } else {
-                    console.error('No se encontró el valor de merma.');
-                }
-            })
-            .catch(error => {
-                console.error('Error al consultar la base de datos:', error);
-            });
-
-
+         
+            getMermaHumedad()
 
     })
-
-
-
-
-
 
 }
 

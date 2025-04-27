@@ -33,12 +33,15 @@ class PaihuenCerealesResource extends Resource
                             ->options([
                                 'Maiz' => 'Maiz',
                                 'Soja' => 'Soja',
-                                'Trigo' => 'Cascara de Mani',
+                                'Cascara de mani' => 'Cascara de Mani',
+                                'Piedras' => 'Piedras',
+                                'Urea' => 'Urea',
+                                'Harina de Soja' => 'Harina de Soja',
                                 ])
                             ->default('Maiz')
                             ->required()
+                            ->id('cereal')
                             ->searchable() // Permite buscar o escribir valores personalizados
-                            ->dehydrated(false)
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('otroIngreso')
                                 ->label('Otro Ingreso')
@@ -73,8 +76,6 @@ class PaihuenCerealesResource extends Resource
                                 Forms\Components\TextInput::make('pesoNeto')
                                     ->id('pesoNeto')
                                     ->label('Peso Neto')
-                                    ->required()
-                                    ->default(0)
                                     ->maxLength(191)
                                     ->disabled()
                                     ->dehydrated(false),
@@ -91,7 +92,7 @@ class PaihuenCerealesResource extends Resource
                                     ->id('mermaHumedad')
                                     ->label('% Merma de Humedad')
                                     ->disabled()
-                                    ->dehydrated(false)
+                                    ->dehydrated()
                                     ->default(0),
                                 Forms\Components\TextInput::make('pesoNetoHumedad')
                                     ->id('pesoNetoHumedad')
@@ -119,6 +120,7 @@ class PaihuenCerealesResource extends Resource
                                     Forms\Components\TextInput::make('materiasExtranas')
                                         ->label('Materias Extrañas')
                                         ->numeric()
+                                        ->default(0)
                                         ->step(5),
                                     Forms\Components\Radio::make('destino')
                                         ->label('Destino/Almacenamiento')
@@ -140,7 +142,39 @@ class PaihuenCerealesResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('fecha')
+                    ->label('Fecha')
+                    ->sortable()
+                    ->searchable()
+                    ->formatStateUsing(function ($state) {
+                        return \Carbon\Carbon::parse($state)->format('d-m-Y');
+                    }),
+                Tables\Columns\TextColumn::make('cereal')
+                    ->label('Cereal')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('cartaPorte')
+                    ->label('Carta de Porte')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('pesoBruto')
+                    ->label('Peso Bruto')
+                    ->sortable()
+                    ->searchable()
+                    ->formatStateUsing(function ($state) {
+                        return number_format($state,0,',','.');
+                    }),
+                Tables\Columns\TextColumn::make('vendedor')
+                    ->label('Vendedor')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('destino')
+                    ->label('Destino')
+                    ->sortable()
+                    ->searchable()
+                    ->formatStateUsing(function ($state) {
+                        return $state === 'siloBolsa' ? 'Silo Bolsa' : ($state === 'plantaSilo' ? 'Planta de Silo' : $state);
+                    }),
             ])
             ->filters([
                 //

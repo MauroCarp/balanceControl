@@ -14,19 +14,18 @@ return new class extends Migration
         Schema::create('paihuen_cereales', function (Blueprint $table) {
             $table->id();
             $table->date('fecha');
-            $table->string('establecimiento');
             $table->string('cereal');
             $table->string('cartaPorte');
             $table->string('vendedor');
             $table->float('pesoBruto');
-            $table->float('tara');
+            $table->float('pesoTara');
             $table->integer('humedad');
             $table->integer('mermaHumedad');
             $table->string('calidad');
-            $table->boolean('materiasExtraneas');
-            $table->boolean('tierra');
+            $table->string('materiasExtranas');
             $table->boolean('granosRotos');
             $table->boolean('granosQuebrados');
+            $table->boolean('tierra');
             $table->string('destino');
             $table->string('observaciones');
             $table->timestamps();

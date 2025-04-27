@@ -14,16 +14,17 @@ return new class extends Migration
         Schema::create('barlovento_cereales', function (Blueprint $table) {
             $table->id();
             $table->date('fecha');
-            $table->date('establecimiento');
             $table->string('cereal');
             $table->string('cartaPorte');
             $table->string('vendedor');
             $table->float('pesoBruto');
-            $table->float('tara');
+            $table->float('pesoTara');
             $table->integer('humedad');
             $table->integer('mermaHumedad');
             $table->string('calidad');
-            $table->string('materiasExtraneas');
+            $table->string('materiasExtranas');
+            $table->boolean('granosRotos');
+            $table->boolean('granosQuebrados');
             $table->boolean('tierra');
             $table->string('destino');
             $table->string('observaciones');

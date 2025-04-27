@@ -38,7 +38,7 @@ class BarloventoIngresosResource extends Resource
                                     ->label('Fecha')
                                     ->required(),
                                 Forms\Components\Select::make('consignatario')
-                                    ->options(Consignatarios::pluck('nombre', 'id')->toArray())
+                                    ->options(Consignatarios::pluck('nombre')->toArray())
                                     ->label('Consignatario')
                                     ->searchable()
                                     ->preload()
@@ -192,18 +192,22 @@ class BarloventoIngresosResource extends Resource
                     ]),
                 Wizard\Step::make('Ingreso Gastos')
                     ->schema([
-                        Forms\Components\TextInput::make('precioKg')
-                            ->label('Precio Kg')
-                            ->maxLength(25)
-                            ->numeric(),
-                        Forms\Components\TextInput::make('precioFlete')
-                            ->label('Precio Flete')
-                            ->maxLength(25)
-                            ->numeric(),
-                        Forms\Components\TextInput::make('precioOtrosGastos')
-                            ->label('Precio Otros Gastos')
-                            ->maxLength(25)
-                            ->numeric(),
+                        Forms\Components\Grid::make(3)
+                            ->schema([
+
+                                Forms\Components\TextInput::make('precioKg')
+                                    ->label('Precio Kg')
+                                    ->maxLength(25)
+                                    ->numeric(),
+                                Forms\Components\TextInput::make('precioFlete')
+                                    ->label('Precio Flete')
+                                    ->maxLength(25)
+                                    ->numeric(),
+                                Forms\Components\TextInput::make('precioOtrosGastos')
+                                    ->label('Precio Otros Gastos')
+                                    ->maxLength(25)
+                                    ->numeric(),
+                            ])
                     ])->hidden(fn (string $context) => $context === 'create'), 
             ])
             ->columnSpan('full')
@@ -215,13 +219,35 @@ class BarloventoIngresosResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('fecha')
+                    ->label('Fecha')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('consignatario')
+                    ->label('Consignatario')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('comisionista')
+                    ->label('Comisionista')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('dte')
+                    ->label('Nº DTE')
+                    ->sortable()
+                    ->searchable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    // Tables\Actions\Action::make('Ver')
+                    //     ->icon('heroicon-o-eye')
+                    //     ->url(fn (BarloventoIngresos $record): string => route('filament.resources.barlovento-ingresos.view', $record))
+                    //     ->color('success'),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -243,6 +269,8 @@ class BarloventoIngresosResource extends Resource
             'index' => Pages\ListBarloventoIngresos::route('/'),
             'create' => Pages\CreateBarloventoIngresos::route('/create'),
             'edit' => Pages\EditBarloventoIngresos::route('/{record}/edit'),
+            // 'view' => Pages\ViewBarloventoIngresos::route('/{record}'),
+
         ];
     }
 }
