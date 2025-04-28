@@ -267,7 +267,10 @@ class BarloventoIngresosResource extends Resource
                 Tables\Actions\DeleteAction::make()
                     ->color('danger')
                     ->label('')
-                    ->icon('heroicon-o-trash'),
+                    ->icon('heroicon-o-trash')
+                    ->after(function () {
+                        return redirect()->route('filament.resources.barlovento-ingresos.index');
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -468,14 +471,20 @@ class BarloventoIngresosResource extends Resource
                                         ->size('lg')
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
-                                            return '$ ' . number_format((($record->precioKg * $record->origen_pesoNeto) + ((($record->precioKg * $record->origen_pesoNeto) * 10.5) /100)), 2, ',', '.');
+                                            $costoTotal = $record->precioKg * $record->origen_pesoNeto;
+                                            $totalConIva = $costoTotal + (($costoTotal * 10.5) /100);
+                                            return '$ ' . number_format($totalConIva, 2, ',', '.');
                                         }),
                                     TextEntry::make('comision')
                                         ->label('% Comisión')
                                         ->size('lg')
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
-                                            return Comisionistas::find($record->comisionista)?->porcentajeComision . '% - $ ' . number_format((((($record->precioKg * $record->origen_pesoNeto) + ((($record->precioKg * $record->origen_pesoNeto) * 10.5) /100)) * 4) / 100),2,',','.') ?? '-';
+                                            $comision = Comisionistas::find($record->comisionista)?->porcentajeComision ?? 0;
+                                            $costoTotal = $record->precioKg * $record->origen_pesoNeto;
+                                            $totalConIva = $costoTotal + (($costoTotal * 10.5) /100);
+
+                                            return $comision . '% - $ ' . number_format((($totalConIva * $comision) / 100),2,',','.');
                                         }),
                                     TextEntry::make('flete')
                                         ->label('Flete')
@@ -509,7 +518,12 @@ class BarloventoIngresosResource extends Resource
                                         ->size('lg')
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
-                                            return '$ ' . number_format(((($record->precioKg * $record->origen_pesoNeto) + ((($record->precioKg * $record->origen_pesoNeto) * 10.5) /100)) + (((4000 + ((4000 * 10.5) /100)) * 4) / 100) + $record->precioFlete + $record->precioOtrosGastos), 2, ',', '.');
+                                            $comision = Comisionistas::find($record->comisionista)?->porcentajeComision ?? 0;
+                                            $costoTotal = $record->precioKg * $record->origen_pesoNeto;
+                                            $totalConIva = $costoTotal + (($costoTotal * 10.5) /100);
+
+
+                                            return '$ ' . number_format(($totalConIva + (($totalConIva * $comision) / 100) + $record->precioFlete + $record->precioOtrosGastos), 2, ',', '.');
                                         }),
 
                                     TextEntry::make('precioNetoKg')
@@ -517,7 +531,11 @@ class BarloventoIngresosResource extends Resource
                                         ->size('lg')
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
-                                            return '$ ' . number_format((($record->precioKg + (((4000 + ((4000 * 10.5) /100)) + Comisionistas::find($record->comisionista)?->porcentajeComision + $record->precioFlete + $record->precioOtrosGastos)) / $record->origen_pesoNeto)), 2, ',', '.');
+                                            $comision = Comisionistas::find($record->comisionista)?->porcentajeComision ?? 0;
+                                            $costoTotal = $record->precioKg * $record->origen_pesoNeto;
+                                            $totalConIva = $costoTotal + (($costoTotal * 10.5) /100);
+
+                                            return '$ ' . number_format(($record->precioKg + (((($totalConIva * $comision) / 100) + $record->precioFlete + $record->precioOtrosGastos) / $record->origen_pesoNeto)), 2, ',', '.');
                                         }),
 
                                 ]),
