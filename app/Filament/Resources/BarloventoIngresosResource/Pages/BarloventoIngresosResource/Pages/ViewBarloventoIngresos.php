@@ -18,4 +18,16 @@ class ViewBarloventoIngresos extends ViewRecord
         ];
     }
 
+    public function getTitle(): string
+    {
+        return 'Detalle Hacienda'; // Cambia este texto al título deseado
+
+    }
+
+    public function getBreadcrumb(): string
+    {
+        return 'Ver detalle'; // Cambia este texto al breadcrumb deseado
+    }
+
+
 }

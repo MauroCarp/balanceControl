@@ -20,6 +20,7 @@ use Filament\Infolists\Components\Split;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\Grid as GridInfolist;
 use Filament\Infolists\Components\Group;
+use Filament\Infolists\Infolist;
 use Illuminate\Support\Carbon;
 
 class BarloventoIngresosResource extends Resource
@@ -56,10 +57,10 @@ class BarloventoIngresosResource extends Resource
                                     ])
                                     ->createOptionUsing(function (array $data): int {
                                         $consignatario = Consignatarios::create(['nombre' => $data['nombre']]);
-                                        return $consignatario->id;
+                                        return $consignatario->nombre;
                                     }),
                                 Forms\Components\Select::make('comisionista')
-                                    ->options(Comisionistas::pluck('nombre', 'id')->toArray())
+                                    ->options(Comisionistas::pluck('nombre')->toArray())
                                     ->label('Comisionista')
                                     ->searchable()
                                     ->preload()
@@ -71,7 +72,7 @@ class BarloventoIngresosResource extends Resource
                                     ])
                                     ->createOptionUsing(function (array $data): int {
                                         $comisionista = Comisionistas::create(['nombre' => $data['nombre']]);
-                                        return $comisionista->id;
+                                        return $comisionista->nombre;
                                     }),
 
                                 Forms\Components\Grid::make(4)
@@ -235,11 +236,17 @@ class BarloventoIngresosResource extends Resource
                 Tables\Columns\TextColumn::make('consignatario')
                     ->label('Consignatario')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(function ($state) {
+                        return Consignatarios::find($state)?->nombre ?? '-';
+                    }),
                 Tables\Columns\TextColumn::make('comisionista')
                     ->label('Comisionista')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(function ($state) {
+                        return Comisionistas::find($state)?->nombre ?? '-';
+                    }),
                 Tables\Columns\TextColumn::make('dte')
                     ->label('Nº DTE')
                     ->sortable()
@@ -249,69 +256,274 @@ class BarloventoIngresosResource extends Resource
                 //
             ])
             ->actions([
-                    Tables\Actions\Action::make('view')
-                        ->label('')
-                        ->icon('heroicon-o-eye')
-                        ->color('primary')
-                        ->modalHeading('Detalles del Registro')
-                        ->action(function () {})
-                        ->infolist(function ($record) {
-                            return [
-                                InfolistSection::make('Detalles')
-                                    ->schema([
-                                        Split::make([
-                                            GridInfolist::make(2)
-                                                ->schema([
-                                                    TextEntry::make('fecha')
-                                                        ->label('Fecha')
-                                                        ->getStateUsing(function ($record) {
-                
-                                                            return Carbon::parse($record->fecha)->format('d-m-Y');
-                
-                                                        }),
-                                                    TextEntry::make('consignatario')
-                                                        ->label('Consignatario')
-                                                        ->state($record->consignatario),
-                                                    TextEntry::make('comisionista')
-                                                        ->label('Comisionista')
-                                                        ->state($record->comisionista),
-                                                    TextEntry::make('dte')
-                                                        ->label('Nº DTE')
-                                                        ->state($record->dte),
-                                                ]),
-                                            GridInfolist::make(2)
-                                                ->schema([
-                                                    TextEntry::make('origen_terneros')
-                                                        ->label('Terneros Origen')
-                                                        ->state($record->origen_terneros),
-                                                    TextEntry::make('origen_terneras')
-                                                        ->label('Terneras Origen')
-                                                        ->state($record->origen_terneras),
-                                                    TextEntry::make('origen_pesoBruto')
-                                                        ->label('Peso Bruto Origen')
-                                                        ->state($record->origen_pesoBruto),
-                                                    TextEntry::make('origen_pesoNeto')
-                                                        ->label('Peso Neto Origen')
-                                                        ->state($record->origen_pesoNeto),
-                                                ]),
-                                        ]),
-                                    ]),
-                            ];
-                        }),
-                    Tables\Actions\EditAction::make()
-                        ->color('warning')
-                        ->label('')
-                        ->icon('heroicon-o-pencil-square'),
-                    Tables\Actions\DeleteAction::make()
-                        ->color('danger')
-                        ->label('')
-                        ->icon('heroicon-o-trash'),
+                Tables\Actions\ViewAction::make()
+                    ->label('')
+                    ->icon('heroicon-o-eye')
+                    ->color('primary'),
+                Tables\Actions\EditAction::make()
+                    ->color('warning')
+                    ->label('')
+                    ->icon('heroicon-o-pencil-square'),
+                Tables\Actions\DeleteAction::make()
+                    ->color('danger')
+                    ->label('')
+                    ->icon('heroicon-o-trash'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+
+        return $infolist
+        ->schema([
+            // Sección 1: Información General
+            InfolistSection::make('Información General')
+            ->schema([
+                GridInfolist::make(4)
+                    ->schema([
+                        TextEntry::make('fecha')
+                            ->label('Fecha')
+                            ->size('lg')
+                            ->weight('bold'),
+                        TextEntry::make('consignatario')
+                            ->label('Consignatario')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->getStateUsing(function ($record) {
+                                return Consignatarios::find($record->comisionista)?->nombre ?? '-';
+                            }),
+                        TextEntry::make('comisionista')
+                            ->label('Comisionista')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->getStateUsing(function ($record) {
+                                return Comisionistas::find($record->comisionista)?->nombre ?? '-';
+                            }),
+                        TextEntry::make('dte')
+                            ->label('N° DTE')
+                            ->size('lg')
+                            ->weight('bold'),
+                    ]),
+            ]),
+            InfolistSection::make('Origen')
+                ->schema([
+                    // Sección 2: Información de Hacienda
+                    InfolistSection::make('Información de Hacienda')
+                        ->schema([
+                            GridInfolist::make(3)
+                                ->schema([
+                                    TextEntry::make('origen_terneros')
+                                        ->label('Terneros')
+                                        ->size('lg')
+                                        ->weight('bold'),
+                                    TextEntry::make('origen_terneras')
+                                        ->label('Terneras')
+                                        ->size('lg')
+                                        ->weight('bold'),
+                                    TextEntry::make('totaHacienda')
+                                        ->label('Cantidad Total de Hacienda')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return number_format(($record->origen_terneros + $record->origen_terneras), 0, ',', '.');
+                                        }),
+                                ]),
+                        ]),
+
+                    // Sección 3: Información de Pesos
+                    InfolistSection::make('Información de Pesos')
+                        ->schema([
+                            GridInfolist::make(3)
+                                ->schema([
+                                    TextEntry::make('origen_pesoBruto')
+                                        ->label('Peso Bruto')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return number_format($record->origen_pesoBruto, 0, ',', '.') . ' Kg';
+                                        }),
+                                    TextEntry::make('origen_pesoNeto')
+                                        ->label('Peso Neto')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return number_format($record->origen_pesoNeto, 0, ',', '.') . ' Kg';
+                                        }),
+                                    TextEntry::make('diferencia')
+                                        ->label('Diferencia')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return number_format(($record->origen_pesoBruto - $record->origen_pesoNeto), 0, ',', '.') . ' Kg';
+                                        }),
+                                    TextEntry::make('origen_distancia')
+                                        ->label('Distancia Recorrida')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return $record->origen_distancia . ' Km';
+                                        }),
+                                    TextEntry::make('origen_desbaste')
+                                        ->label('% Desbaste')
+                                        ->size('lg')
+                                        ->weight('bold'),
+                                    TextEntry::make('origen_pesoDesbaste')
+                                        ->label('Peso Desbaste')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return number_format(($record->origen_pesoNeto - ($record->origen_pesoNeto * ($record->origen_desbaste / 100))), 0, ',', '.') . ' Kg';
+                                        }),
+                                ]),
+                        ]),
+                ]),
+            InfolistSection::make('Destino')
+                ->schema([
+                    // Sección 2: Información de Hacienda
+                    InfolistSection::make('Información de Hacienda')
+                        ->schema([
+                            GridInfolist::make(3)
+                                ->schema([
+                                    TextEntry::make('destino_terneros')
+                                        ->label('Terneros')
+                                        ->size('lg')
+                                        ->weight('bold'),
+                                    TextEntry::make('destino_terneras')
+                                        ->label('Terneras')
+                                        ->size('lg')
+                                        ->weight('bold'),
+                                    TextEntry::make('totaHaciendaDestino')
+                                        ->label('Cantidad Total de Hacienda')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return number_format(($record->destino_terneros + $record->destino_terneras), 0, ',', '.');
+                                        }),
+                                ]),
+                        ]),
+
+                    // Sección 3: Información de Pesos
+                    InfolistSection::make('Información de Pesos')
+                        ->schema([
+                            GridInfolist::make(4)
+                                ->schema([
+                                    TextEntry::make('destino_pesoBruto')
+                                        ->label('Peso Bruto')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return number_format($record->origen_pesoBruto, 0, ',', '.') . ' Kg';
+                                        }),
+                                    TextEntry::make('destino_tara')
+                                        ->label('Tara')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return number_format($record->destino_tara, 0, ',', '.') . ' Kg';
+                                        }),
+                                    TextEntry::make('destino_diferencia')
+                                        ->label('Diferencia')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return number_format(($record->origen_pesoBruto - $record->origen_pesoNeto), 0, ',', '.') . ' Kg';
+                                        }),
+                                    TextEntry::make('origen_distancia')
+                                        ->label('Distancia Recorrida')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return $record->origen_distancia . ' Km';
+                                        }),
+                                ]),
+                        ]),
+                ]),
+            InfolistSection::make('Contable')
+                ->schema([
+                    InfolistSection::make('Información de Gastos')
+                        ->schema([
+                            GridInfolist::make(3)
+                                ->schema([
+                                    TextEntry::make('precioKg')
+                                        ->label('Precio Kg')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return '$ ' . number_format($record->precioKg, 2, ',', '.');
+                                        }),
+                                    TextEntry::make('totalNeto')
+                                        ->label('$ Total Neto')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return '$ ' . number_format(($record->precioKg * $record->origen_pesoNeto), 2, ',', '.');
+                                        }),
+                                    TextEntry::make('iva')
+                                        ->label('$ Total c/IVA')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return '$ ' . number_format((($record->precioKg * $record->origen_pesoNeto) + ((($record->precioKg * $record->origen_pesoNeto) * 10.5) /100)), 2, ',', '.');
+                                        }),
+                                    TextEntry::make('comision')
+                                        ->label('% Comisión')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return Comisionistas::find($record->comisionista)?->porcentajeComision . '% - $ ' . number_format((((($record->precioKg * $record->origen_pesoNeto) + ((($record->precioKg * $record->origen_pesoNeto) * 10.5) /100)) * 4) / 100),2,',','.') ?? '-';
+                                        }),
+                                    TextEntry::make('flete')
+                                        ->label('Flete')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+
+                                            if($record->precioFlete != 0){
+                                                return 'SI';
+                                            } else {
+                                                return 'NO';
+                                            }
+
+                                        }),
+                                    TextEntry::make('precioFlete')
+                                        ->label('$ Flete')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return '$ ' . number_format($record->precioFlete, 2, ',', '.');
+                                        }),
+                                    TextEntry::make('precioOtrosGastos')
+                                        ->label('Otros Gastos')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return '$ ' . number_format($record->precioOtrosGastos, 2, ',', '.');
+                                        }),
+                                    TextEntry::make('totalConIvaApagar')
+                                        ->label('Total c/IVA a Pagar')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return '$ ' . number_format(((($record->precioKg * $record->origen_pesoNeto) + ((($record->precioKg * $record->origen_pesoNeto) * 10.5) /100)) + (((4000 + ((4000 * 10.5) /100)) * 4) / 100) + $record->precioFlete + $record->precioOtrosGastos), 2, ',', '.');
+                                        }),
+
+                                    TextEntry::make('precioNetoKg')
+                                        ->label('$ Neto de compra por Kg')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            return '$ ' . number_format((($record->precioKg + (((4000 + ((4000 * 10.5) /100)) + Comisionistas::find($record->comisionista)?->porcentajeComision + $record->precioFlete + $record->precioOtrosGastos)) / $record->origen_pesoNeto)), 2, ',', '.');
+                                        }),
+
+                                ]),
+                        ]),
+                ])
+        ]); 
     }
 
     public static function getRelations(): array
@@ -327,7 +539,7 @@ class BarloventoIngresosResource extends Resource
             'index' => Pages\ListBarloventoIngresos::route('/'),
             'create' => Pages\CreateBarloventoIngresos::route('/create'),
             'edit' => Pages\EditBarloventoIngresos::route('/{record}/edit'),
-            // 'view' => Pages\ViewBarloventoIngresos::route('/{record}'),
+            'view' => Pages\ViewBarloventoIngresos::route('/{record}'),
 
         ];
     }
