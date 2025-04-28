@@ -15,6 +15,12 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\Wizard;
+use Filament\Infolists\Components\Section as InfolistSection;
+use Filament\Infolists\Components\Split;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\Grid as GridInfolist;
+use Filament\Infolists\Components\Group;
+use Illuminate\Support\Carbon;
 
 class BarloventoIngresosResource extends Resource
 {
@@ -222,7 +228,10 @@ class BarloventoIngresosResource extends Resource
                 Tables\Columns\TextColumn::make('fecha')
                     ->label('Fecha')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(function ($state) {
+                        return \Carbon\Carbon::parse($state)->format('d-m-Y');
+                    }),
                 Tables\Columns\TextColumn::make('consignatario')
                     ->label('Consignatario')
                     ->sortable()
@@ -240,14 +249,63 @@ class BarloventoIngresosResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    // Tables\Actions\Action::make('Ver')
-                    //     ->icon('heroicon-o-eye')
-                    //     ->url(fn (BarloventoIngresos $record): string => route('filament.resources.barlovento-ingresos.view', $record))
-                    //     ->color('success'),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                ]),
+                    Tables\Actions\Action::make('view')
+                        ->label('')
+                        ->icon('heroicon-o-eye')78yiuhi
+                        ->color('primary')
+                        ->modalHeading('Detalles del Registro')
+                        ->action(function () {})
+                        ->infolist(function ($record) {
+                            return [
+                                InfolistSection::make('Detalles')
+                                    ->schema([
+                                        Split::make([
+                                            GridInfolist::make(2)
+                                                ->schema([
+                                                    TextEntry::make('fecha')
+                                                        ->label('Fecha')
+                                                        ->getStateUsing(function ($record) {
+                
+                                                            return Carbon::parse($record->fecha)->format('d-m-Y');
+                
+                                                        }),
+                                                    TextEntry::make('consignatario')
+                                                        ->label('Consignatario')
+                                                        ->state($record->consignatario),
+                                                    TextEntry::make('comisionista')
+                                                        ->label('Comisionista')
+                                                        ->state($record->comisionista),
+                                                    TextEntry::make('dte')
+                                                        ->label('Nº DTE')
+                                                        ->state($record->dte),
+                                                ]),
+                                            GridInfolist::make(2)
+                                                ->schema([
+                                                    TextEntry::make('origen_terneros')
+                                                        ->label('Terneros Origen')
+                                                        ->state($record->origen_terneros),
+                                                    TextEntry::make('origen_terneras')
+                                                        ->label('Terneras Origen')
+                                                        ->state($record->origen_terneras),
+                                                    TextEntry::make('origen_pesoBruto')
+                                                        ->label('Peso Bruto Origen')
+                                                        ->state($record->origen_pesoBruto),
+                                                    TextEntry::make('origen_pesoNeto')
+                                                        ->label('Peso Neto Origen')
+                                                        ->state($record->origen_pesoNeto),
+                                                ]),
+                                        ]),
+                                    ]),
+                            ];
+                        }),
+                    Tables\Actions\EditAction::make()
+                        ->color('warning')
+                        ->label('')
+                        ->icon('heroicon-o-pencil-square'),
+                    Tables\Actions\DeleteAction::make()
+                        ->color('danger')
+                        ->label('')
+                        ->icon('heroicon-o-trash'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
