@@ -251,7 +251,7 @@ class BarloventoIngresosResource extends Resource
             ->actions([
                     Tables\Actions\Action::make('view')
                         ->label('')
-                        ->icon('heroicon-o-eye')78yiuhi
+                        ->icon('heroicon-o-eye')
                         ->color('primary')
                         ->modalHeading('Detalles del Registro')
                         ->action(function () {})
