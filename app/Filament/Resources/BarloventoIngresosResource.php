@@ -265,12 +265,11 @@ class BarloventoIngresosResource extends Resource
                     ->label('')
                     ->icon('heroicon-o-pencil-square'),
                 Tables\Actions\DeleteAction::make()
-                    ->color('danger')
-                    ->label('')
-                    ->icon('heroicon-o-trash')
-                    ->after(function () {
-                        return redirect()->route('filament.resources.barlovento-ingresos.index');
-                    }),
+                ->modalHeading('¿Estás seguro de que deseas eliminar este registro?')
+                ->modalButton('Eliminar')
+                ->action(function ($record) {
+                    $record->delete();
+                }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
