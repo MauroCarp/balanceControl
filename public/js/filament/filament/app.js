@@ -256,11 +256,6 @@ if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() ===
             getMermaHumedad()
     })
 
-
-
-
-
-
 }
 
 
@@ -306,6 +301,16 @@ if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')
             getMermaHumedad()
 
     })
+
+    if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')[0] === 'paihuen-cereales')) {
+        console.log('hoalalsldald')
+        setTimeout(() => {
+
+            let resultado = Number(pesoBruto.value) - Number(tara.value);
+            document.getElementById('pesoNeto').value = resultado;
+        
+        }, 1000);
+    }
 
 }
 

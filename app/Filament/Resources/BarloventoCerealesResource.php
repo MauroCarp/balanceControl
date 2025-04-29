@@ -18,6 +18,7 @@ use Filament\Infolists\Components\Split;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\Grid as GridInfolist;
 use Filament\Infolists\Components\Group;
+use Illuminate\Support\Facades\DB;
 
 class BarloventoCerealesResource extends Resource
 {
@@ -25,7 +26,7 @@ class BarloventoCerealesResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-right-end-on-rectangle';
     protected static ?string $navigationGroup = 'Barlovento'; // Agrupa en "Barlovento"
-    protected static ?string $navigationLabel = 'Ingresos Cereal'; // Nombre del 
+    protected static ?string $navigationLabel = 'Ingresos Cereales'; // Nombre del 
     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
@@ -146,64 +147,121 @@ class BarloventoCerealesResource extends Resource
 
     public static function infolist(Infolist $infolist): Infolist
     {
-
         return $infolist
         ->schema([
-            InfolistSection::make('Detalle de Ingreso de Cereal')
-            ->schema([
                 GridInfolist::make(3)
                     ->schema([
                         GridInfolist::make(4)
                             ->schema([
                                 TextEntry::make('cereal')
-                                    ->label('Cereal'),
+                                    ->size('lg')
+                                    ->weight('bold')
+                                    ->label('Cereal')
+                                    ->size('lg')
+                                    ->weight('bold'),
                                 TextEntry::make('fecha')
+                                    ->size('lg')
+                                    ->weight('bold')
                                     ->label('Fecha')
                                     ->date('d-m-Y'),
                                 TextEntry::make('cartaPorte')
+                                    ->size('lg')
+                                    ->weight('bold')
                                     ->label('Carta de Porte'),
                                 TextEntry::make('vendedor')
+                                    ->size('lg')
+                                    ->weight('bold')
                                     ->label('Vendedor'),
                             ]),
                         TextEntry::make('pesoBruto')
+                            ->size('lg')
+                            ->weight('bold')
                             ->label('Peso Bruto')
                             ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.') . ' Kg'),
-                        TextEntry::make('pesoTara')
+                            TextEntry::make('pesoTara')
+                            ->size('lg')
+                            ->weight('bold')
                             ->label('Tara')
                             ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.') . ' Kg'),
                         TextEntry::make('pesoNeto')
+                            ->size('lg')
+                            ->weight('bold')
                             ->label('Peso Neto')
-                            ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.') . ' Kg'),
+                            ->getStateUsing(function ($record) {
+                                return number_format(($record->pesoBruto - $record->pesoTara), 0, ',', '.') . ' Kg';
+                            }),
                         TextEntry::make('humedad')
+                            ->size('lg')
+                            ->weight('bold')
                             ->label('% de Humedad'),
                         TextEntry::make('mermaHumedad')
-                            ->label('% Merma de Humedad'),
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('% Merma de Humedad')
+                            ->getStateUsing(function ($record) {
+
+                                $merma = DB::table('merma_humedad')
+                                ->where('cereal', $record->cereal)
+                                ->where('humedad', $record->humedad)
+                                ->value('merma');
+
+                                return $merma . '%';
+                            }),
                         TextEntry::make('pesoNetoHumedad')
-                            ->label('Peso Neto de Humedad'),
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('Peso Neto de Humedad')
+                            ->getStateUsing(function ($record) {
+
+                                $merma = DB::table('merma_humedad')
+                                ->where('cereal', $record->cereal)
+                                ->where('humedad', $record->humedad)
+                                ->value('merma');
+
+                                $pesoNeto = $record->pesoBruto - $record->pesoTara;
+
+                                $resultado = ($pesoNeto - ($pesoNeto * ($merma / 100)));
+
+                                return number_format($resultado,0,',','.') . ' Kg';
+                            }),
                         TextEntry::make('granosRotos')
-                                ->label('Granos Dañados')
-                                ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No')),
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('Granos Dañados')
+                            ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No')),
                         TextEntry::make('granosQuebrados')
+                            ->size('lg')
+                            ->weight('bold')
                             ->label('Granos Quebrados')
                             ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No')),
                         TextEntry::make('tierra')
+                            ->size('lg')
+                            ->weight('bold')
                             ->label('Contiene Tierra')
                             ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No')),
                         TextEntry::make('calidad')
+                            ->size('lg')
+                            ->weight('bold')
                             ->label('Calidad')
-                            ->formatStateUsing(fn ($state) => ucfirst($state)),
+                            ->formatStateUsing(fn ($state) => (($state == 'muyBuena') ? 'Muy Buena' : ucfirst($state))),
                         TextEntry::make('materiasExtranas')
+                            ->size('lg')
+                            ->weight('bold')
                             ->label('Materias Extrañas'),
                         TextEntry::make('destino')
+                            ->size('lg')
+                            ->weight('bold')
                             ->label('Destino/Almacenamiento')
                             ->formatStateUsing(fn ($state) => ($state == 'plantaSilo' ? 'Planta/Silo' : 'Silo Bolsa')),
-
                         TextEntry::make('observaciones')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->formatStateUsing(fn ($state) => (($state == '' || is_null($state) ) ? '-' : 'j')),
                       
                     ]),
-            ]),
         ]); 
     }
+    
     public static function table(Table $table): Table
     {
         return $table
@@ -247,7 +305,8 @@ class BarloventoCerealesResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
-                ->label(''),
+                ->label('')
+                ->color('primary'),
                 Tables\Actions\EditAction::make()
                 ->label(''),
                 Tables\Actions\DeleteAction::make()
@@ -274,6 +333,8 @@ class BarloventoCerealesResource extends Resource
             'index' => Pages\ListBarloventoCereales::route('/'),
             'create' => Pages\CreateBarloventoCereales::route('/create'),
             'edit' => Pages\EditBarloventoCereales::route('/{record}/edit'),
+            'view' => Pages\ViewBarloventoCereales::route('/{record}'),
+
         ];
     }
 }
