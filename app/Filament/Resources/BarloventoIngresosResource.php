@@ -265,11 +265,12 @@ class BarloventoIngresosResource extends Resource
                     ->label('')
                     ->icon('heroicon-o-pencil-square'),
                 Tables\Actions\DeleteAction::make()
-                ->modalHeading('¿Estás seguro de que deseas eliminar este registro?')
-                ->modalButton('Eliminar')
-                ->action(function ($record) {
-                    $record->delete();
-                }),
+                    ->color('danger')
+                    ->label('')
+                    ->icon('heroicon-o-trash')
+                    ->modalHeading('Eliminar Ingreso')
+                    ->modalSubheading('¿Está seguro de eliminar este ingreso?'),
+                
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -12,6 +12,12 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Infolists\Components\Section as InfolistSection;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Split;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\Grid as GridInfolist;
+use Filament\Infolists\Components\Group;
 
 class BarloventoCerealesResource extends Resource
 {
@@ -138,6 +144,66 @@ class BarloventoCerealesResource extends Resource
             ]);
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+
+        return $infolist
+        ->schema([
+            InfolistSection::make('Detalle de Ingreso de Cereal')
+            ->schema([
+                GridInfolist::make(3)
+                    ->schema([
+                        GridInfolist::make(4)
+                            ->schema([
+                                TextEntry::make('cereal')
+                                    ->label('Cereal'),
+                                TextEntry::make('fecha')
+                                    ->label('Fecha')
+                                    ->date('d-m-Y'),
+                                TextEntry::make('cartaPorte')
+                                    ->label('Carta de Porte'),
+                                TextEntry::make('vendedor')
+                                    ->label('Vendedor'),
+                            ]),
+                        TextEntry::make('pesoBruto')
+                            ->label('Peso Bruto')
+                            ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.') . ' Kg'),
+                        TextEntry::make('pesoTara')
+                            ->label('Tara')
+                            ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.') . ' Kg'),
+                        TextEntry::make('pesoNeto')
+                            ->label('Peso Neto')
+                            ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.') . ' Kg'),
+                        TextEntry::make('humedad')
+                            ->label('% de Humedad'),
+                        TextEntry::make('mermaHumedad')
+                            ->label('% Merma de Humedad'),
+                        TextEntry::make('pesoNetoHumedad')
+                            ->label('Peso Neto de Humedad'),
+                        TextEntry::make('granosRotos')
+                                ->label('Granos Dañados')
+                                ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No')),
+                        TextEntry::make('granosQuebrados')
+                            ->label('Granos Quebrados')
+                            ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No')),
+                        TextEntry::make('tierra')
+                            ->label('Contiene Tierra')
+                            ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No')),
+                        TextEntry::make('calidad')
+                            ->label('Calidad')
+                            ->formatStateUsing(fn ($state) => ucfirst($state)),
+                        TextEntry::make('materiasExtranas')
+                            ->label('Materias Extrañas'),
+                        TextEntry::make('destino')
+                            ->label('Destino/Almacenamiento')
+                            ->formatStateUsing(fn ($state) => ($state == 'plantaSilo' ? 'Planta/Silo' : 'Silo Bolsa')),
+
+                        TextEntry::make('observaciones')
+                      
+                    ]),
+            ]),
+        ]); 
+    }
     public static function table(Table $table): Table
     {
         return $table
@@ -180,7 +246,13 @@ class BarloventoCerealesResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+                ->label(''),
+                Tables\Actions\EditAction::make()
+                ->label(''),
+                Tables\Actions\DeleteAction::make()
+                ->label('')
+                ->color('danger'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -66,7 +66,7 @@ if(getUrlAfterAdmin() === '') {
 }
 
 ///*********************     
-//                          CREATE INGRESOS       
+//                          CREATE EDIT INGRESOS       
 //                                   ************************/
 
 if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')[0] === 'barlovento-ingresos'))) {
@@ -168,10 +168,10 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
 }
 
 ///*********************     
-//                          CREATE EGRESOS       
+//                          CREATE EDIT EGRESOS       
 //                                   ************************/
 
-if(getUrlAfterAdmin() === 'barlovento-egresos/create') {
+if(getUrlAfterAdmin() === 'barlovento-egresos/create' || (getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')[0] === 'barlovento-egresos'))) {
 
     let novillos = document.getElementById('novillos')
     let vaquillonas = document.getElementById('vaquillonas')
@@ -195,15 +195,31 @@ if(getUrlAfterAdmin() === 'barlovento-egresos/create') {
     })
 
     tara.addEventListener('change', function() {
+
         let resultado = Number(pesoBruto.value) - Number(tara.value);
         document.getElementById('pesoNeto').value = resultado;
 
-        // let resultadoDesbaste = (Number(origen_pesoNeto.value) - (Number(origen_pesoNeto.value) * (Number(origen_desbaste.value) / 100)));
+        let resultadoDesbaste = resultado - ((resultado * 8) / 100);
 
-        // document.getElementById('pesoNetoDesbastado').value = resultadoDesbaste;
+        document.getElementById('pesoNetoDesbastado').value = resultadoDesbaste;
 
     })
 
+    if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')[0] === 'barlovento-egresos')) {
+    
+        setTimeout(() => {
+        let resultado = Number(novillos.value) + Number(vaquillonas.value);
+        document.getElementById('cantidad').value = resultado;
+
+        resultado = Number(pesoBruto.value) - Number(tara.value);
+        document.getElementById('pesoNeto').value = resultado;
+
+        let resultadoDesbaste = resultado - ((resultado * 8) / 100);
+
+        document.getElementById('pesoNetoDesbastado').value = resultadoDesbaste;
+       
+        }, 1000);
+    }
 
 }
 
@@ -246,9 +262,7 @@ if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() ===
 
 
 }
-///*********************     
-//                          EDIT INGRESOS
-//                                   ************************/
+
 
 ///*********************     
 //                          EDIT CEREALES       
