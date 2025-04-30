@@ -44,7 +44,7 @@ class AdminPanelProvider extends PanelProvider
             //          ->icon('heroicon-o-clipboard-document-list')
             //          ->collapsed()
             // ])
-            ->sidebarWidth('15rem')
+            ->sidebarWidth('13rem')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

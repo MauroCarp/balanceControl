@@ -117,10 +117,10 @@ class BarloventoIngresosResource extends Resource
                                         ->id('origen_pesoNeto')
                                         ->maxLength(191)
                                         ->numeric(),
-                                    Forms\Components\TextInput::make('diferencia')
-                                        ->label('Diferencia')
+                                    Forms\Components\TextInput::make('promedio')
+                                        ->label('Promedio - Peso Neto / Total Hacienda')
                                         ->disabled()
-                                        ->id('diferencia')
+                                        ->id('promedio')
                                         ->default(0)
                                         ->dehydrated(false),
                                     ]),
@@ -172,7 +172,7 @@ class BarloventoIngresosResource extends Resource
                                     ->disabled()
                                     ->id('cantidadTotalDestino'),
                             ]),
-                        Forms\Components\Grid::make(3)
+                        Forms\Components\Grid::make(5)
                             ->schema([
                                 Forms\Components\TextInput::make('destino_pesoBruto')
                                     ->label('Peso Bruto')
@@ -182,20 +182,34 @@ class BarloventoIngresosResource extends Resource
                                     ->numeric()
                                     ->id('destino_pesoBruto'),
                                 Forms\Components\TextInput::make('destino_tara')
-                                    ->label('Peso Neto')
+                                    ->label('Tara')
                                     ->required()
                                     ->maxLength(191)
                                     ->default(0)
                                     ->numeric()
                                     ->id('destino_tara'),
+                                Forms\Components\TextInput::make('destino_pesoNeto')
+                                    ->label('Peso Neto')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->default(0)
+                                    ->reactive()
+                                    ->id('destino_pesoNeto'),
+                                Forms\Components\TextInput::make('destino_promedio')
+                                    ->label('Promedio - Peso Neto / Total Hacienda')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->default(0)
+                                    ->reactive()
+                                    ->id('destino_promedio'),
                                 Forms\Components\TextInput::make('destino_diferencia')
-                                    ->label('Diferencia')
+                                    ->label('Diferencia Peso Neto Origen/Destino')
                                     ->disabled()
                                     ->dehydrated(false)
                                     ->default(0)
                                     ->reactive()
                                     ->id('destino_diferencia')
-                            ]),
+                                ]),
                     ]),
                 Wizard\Step::make('Ingreso Gastos')
                     ->schema([

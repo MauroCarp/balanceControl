@@ -255,9 +255,7 @@ class BarloventoCerealesResource extends Resource
                             ->formatStateUsing(fn ($state) => ($state == 'plantaSilo' ? 'Planta/Silo' : 'Silo Bolsa')),
                         TextEntry::make('observaciones')
                             ->size('lg')
-                            ->weight('bold')
-                            ->formatStateUsing(fn ($state) => (($state == '' || is_null($state) ) ? '-' : 'j')),
-                      
+                            ->weight('bold'),                      
                     ]),
         ]); 
     }

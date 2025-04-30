@@ -88,15 +88,15 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
     let origen_pesoNeto = document.getElementById('origen_pesoNeto')
     let origen_desbaste = document.getElementById('origen_desbaste')
 
-    origen_pesoBruto.addEventListener('change', function() {
-            let resultado = Number(origen_pesoBruto.value) - Number(origen_pesoNeto.value);
-            document.getElementById('diferencia').value = resultado;
-    })
+    // origen_pesoBruto.addEventListener('change', function() {
+    //         let resultado = Number(origen_pesoBruto.value) - Number(origen_pesoNeto.value);
+    //         document.getElementById('diferencia').value = resultado;
+    // })
 
     origen_pesoNeto.addEventListener('change', function() {
 
-        let resultado = Number(origen_pesoBruto.value) - Number(origen_pesoNeto.value);
-        document.getElementById('diferencia').value = resultado;
+        let resultado = Number(origen_pesoNeto.value) / (Number(origen_terneros.value) + Number(origen_terneras.value));
+        document.getElementById('promedio').value = resultado;
 
         if(origen_desbaste.value != '') {
             
@@ -132,16 +132,37 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
     })
 
     let destino_pesoBruto = document.getElementById('destino_pesoBruto')
-    let destino__tara = document.getElementById('destino_tara')
+    let destino_tara = document.getElementById('destino_tara')
 
     destino_pesoBruto.addEventListener('change', function() {
-            let resultado = Number(destino_pesoBruto.value) - Number(destino__tara.value);
-            document.getElementById('destino_diferencia').value = resultado;
+
+            let pesoNeto = Number(destino_pesoBruto.value) - Number(destino_tara.value);
+            document.getElementById('destino_pesoNeto').value = pesoNeto;
+
+            let promedio = pesoNeto / (Number(destino_terneros.value) + Number(destino_terneras.value));
+            document.getElementById('destino_promedio').value = promedio;
+
+            let diferencia = Number(origen_pesoNeto.value) - Number(pesoNeto);
+
+            document.getElementById('destino_diferencia').value = diferencia;
+
+            if (Math.abs(Number(origen_pesoBruto.value) - Number(destino_pesoBruto.value)) > (Number(origen_pesoBruto.value) * 0.04)) {
+                alert('El peso bruto de origen y destino difieren en más del 4%');
+            }
     })
 
-    destino__tara.addEventListener('change', function() {
-        let resultado = Number(destino_pesoBruto.value) - Number(destino__tara.value);
-        document.getElementById('destino_diferencia').value = resultado;
+    destino_tara.addEventListener('change', function() {
+
+        let pesoNeto = Number(destino_pesoBruto.value) - Number(destino_tara.value);
+        document.getElementById('destino_pesoNeto').value = pesoNeto;
+
+        let promedio = pesoNeto / (Number(destino_terneros.value) + Number(destino_terneras.value));
+        document.getElementById('destino_promedio').value = promedio;
+
+        let diferencia = Number(origen_pesoNeto.value) - Number(pesoNeto);
+
+        document.getElementById('destino_diferencia').value = diferencia;
+
 
     })
 
@@ -151,8 +172,8 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
         let resultado = Number(origen_terneros.value) + Number(origen_terneras.value);
         document.getElementById('cantidadTotal').value = resultado;
 
-        resultado = Number(origen_pesoBruto.value) - Number(origen_pesoNeto.value);
-        document.getElementById('diferencia').value = resultado;
+        resultado = Number(origen_pesoNeto.value) / (Number(origen_terneros.value) + Number(origen_terneras.value));
+        document.getElementById('promedio').value = resultado;
 
         resultado = (Number(origen_pesoNeto.value) - (Number(origen_pesoNeto.value) * (Number(origen_desbaste.value) / 100)));
         document.getElementById('pesoDesbaste').value = resultado;
@@ -160,9 +181,22 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
         resultado = Number(destino_terneros.value) + Number(destino_terneras.value);
         document.getElementById('cantidadTotalDestino').value = resultado;
         
-        resultado = Number(destino_pesoBruto.value) - Number(destino__tara.value);
+        resultado = Number(destino_pesoBruto.value) - Number(destino_tara.value);
         document.getElementById('destino_diferencia').value = resultado;
-        }, 1000);
+
+        let pesoNeto = Number(destino_pesoBruto.value) - Number(destino_tara.value);
+            document.getElementById('destino_pesoNeto').value = pesoNeto;
+
+        let promedio = pesoNeto / (Number(destino_terneros.value) + Number(destino_terneras.value));
+        document.getElementById('destino_promedio').value = promedio;
+
+        let diferencia = Number(origen_pesoNeto.value) - Number(pesoNeto);
+
+        document.getElementById('destino_diferencia').value = diferencia;
+
+
+
+        }, 2000);
     }
 
 }
