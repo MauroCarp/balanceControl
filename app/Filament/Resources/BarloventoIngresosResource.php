@@ -45,7 +45,7 @@ class BarloventoIngresosResource extends Resource
                                     ->label('Fecha')
                                     ->required(),
                                 Forms\Components\Select::make('consignatario')
-                                    ->options(Consignatarios::pluck('nombre')->toArray())
+                                    ->options(Consignatarios::pluck('nombre','id')->toArray())
                                     ->label('Consignatario')
                                     ->searchable()
                                     ->preload()
@@ -57,22 +57,22 @@ class BarloventoIngresosResource extends Resource
                                     ])
                                     ->createOptionUsing(function (array $data): int {
                                         $consignatario = Consignatarios::create(['nombre' => $data['nombre']]);
-                                        return $consignatario->nombre;
+                                        return $consignatario->id;
                                     }),
                                 Forms\Components\Select::make('comisionista')
-                                    ->options(Comisionistas::pluck('nombre')->toArray())
+                                    ->options(Comisionistas::pluck('nombre', 'id')->toArray())
                                     ->label('Comisionista')
                                     ->searchable()
                                     ->preload()
                                     ->required()
                                     ->createOptionForm([
-                                        Forms\Components\TextInput::make('comisionista')
+                                        Forms\Components\TextInput::make('nombre')
                                             ->label('Comisionista')
                                             ->required(),
                                     ])
                                     ->createOptionUsing(function (array $data): int {
                                         $comisionista = Comisionistas::create(['nombre' => $data['nombre']]);
-                                        return $comisionista->nombre;
+                                        return $comisionista->id;
                                     }),
 
                                 Forms\Components\Grid::make(4)
@@ -312,7 +312,7 @@ class BarloventoIngresosResource extends Resource
                             ->size('lg')
                             ->weight('bold')
                             ->getStateUsing(function ($record) {
-                                return Consignatarios::find($record->comisionista)?->nombre ?? '-';
+                                return Consignatarios::find($record->consignatario)?->nombre ?? '-';
                             }),
                         TextEntry::make('comisionista')
                             ->label('Comisionista')

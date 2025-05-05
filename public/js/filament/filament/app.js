@@ -77,26 +77,27 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
     origen_terneros.addEventListener('change', function() {
             let resultado = Number(origen_terneros.value) + Number(origen_terneras.value);
             document.getElementById('cantidadTotal').value = resultado;
+
+            resultado = Number(origen_pesoNeto.value) / (Number(origen_terneros.value) + Number(origen_terneras.value));
+            document.getElementById('promedio').value = resultado.toFixed(2);
     })
 
     origen_terneras.addEventListener('change', function() {
         let resultado = Number(origen_terneros.value) + Number(origen_terneras.value);
         document.getElementById('cantidadTotal').value = resultado;
+
+        resultado = Number(origen_pesoNeto.value) / (Number(origen_terneros.value) + Number(origen_terneras.value));
+        document.getElementById('promedio').value = resultado.toFixed(2);
     })
 
     let origen_pesoBruto = document.getElementById('origen_pesoBruto')
     let origen_pesoNeto = document.getElementById('origen_pesoNeto')
     let origen_desbaste = document.getElementById('origen_desbaste')
 
-    // origen_pesoBruto.addEventListener('change', function() {
-    //         let resultado = Number(origen_pesoBruto.value) - Number(origen_pesoNeto.value);
-    //         document.getElementById('diferencia').value = resultado;
-    // })
-
     origen_pesoNeto.addEventListener('change', function() {
 
         let resultado = Number(origen_pesoNeto.value) / (Number(origen_terneros.value) + Number(origen_terneras.value));
-        document.getElementById('promedio').value = resultado;
+        document.getElementById('promedio').value = resultado.toFixed(2);
 
         if(origen_desbaste.value != '') {
             
@@ -124,11 +125,23 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
     destino_terneros.addEventListener('change', function() {
             let resultado = Number(destino_terneros.value) + Number(destino_terneras.value);
             document.getElementById('cantidadTotalDestino').value = resultado;
+
+            let pesoNeto = Number(destino_pesoBruto.value) - Number(destino_tara.value);
+            document.getElementById('destino_pesoNeto').value = pesoNeto;
+
+            let promedio = pesoNeto / (Number(destino_terneros.value) + Number(destino_terneras.value));
+            document.getElementById('destino_promedio').value = promedio.toFixed(2);
     })
 
     destino_terneras.addEventListener('change', function() {
         let resultado = Number(destino_terneros.value) + Number(destino_terneras.value);
         document.getElementById('cantidadTotalDestino').value = resultado;
+
+        let pesoNeto = Number(destino_pesoBruto.value) - Number(destino_tara.value);
+        document.getElementById('destino_pesoNeto').value = pesoNeto;
+
+        let promedio = pesoNeto / (Number(destino_terneros.value) + Number(destino_terneras.value));
+        document.getElementById('destino_promedio').value = promedio.toFixed(2);
     })
 
     let destino_pesoBruto = document.getElementById('destino_pesoBruto')
@@ -140,15 +153,45 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
             document.getElementById('destino_pesoNeto').value = pesoNeto;
 
             let promedio = pesoNeto / (Number(destino_terneros.value) + Number(destino_terneras.value));
-            document.getElementById('destino_promedio').value = promedio;
+            document.getElementById('destino_promedio').value = promedio.toFixed(2);
 
             let diferencia = Number(origen_pesoNeto.value) - Number(pesoNeto);
 
             document.getElementById('destino_diferencia').value = diferencia;
 
             if (Math.abs(Number(origen_pesoBruto.value) - Number(destino_pesoBruto.value)) > (Number(origen_pesoBruto.value) * 0.04)) {
-                alert('El peso bruto de origen y destino difieren en más del 4%');
+                console.log('El peso bruto de origen y destino difieren en más del 4%');
+                // showToast('El usuario fue creado correctamente');
+                window.dispatchEvent(new CustomEvent('notification', {
+                    detail: {
+                        status: 'success', // success | danger | warning | info
+                        title: 'Todo bien',
+                        message: 'Se guardó correctamente'
+                    }
+                }));
+
             }
+
+            let porcentajeRestar = Math.floor(Number(origen_distancia.value) / 100) * 0.5
+            console.log(porcentajeRestar)
+            let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(destino_pesoNeto.value) * 1.5) / 100);
+            nuevoPesoNeto = nuevoPesoNeto - ((nuevoPesoNeto * porcentajeRestar) / 100);
+            console.log(nuevoPesoNeto)
+
+            if(nuevoPesoNeto > pesoNeto) {
+
+                // showToast('El usuario fue creado correctamente');
+                window.dispatchEvent(new CustomEvent('notification', {
+                    detail: {
+                        status: 'success', // success | danger | warning | info
+                        title: 'Todo bien',
+                        message: 'Se guardó correctamente'
+                    }
+                }));
+            }
+
+            
+
     })
 
     destino_tara.addEventListener('change', function() {
@@ -157,12 +200,28 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
         document.getElementById('destino_pesoNeto').value = pesoNeto;
 
         let promedio = pesoNeto / (Number(destino_terneros.value) + Number(destino_terneras.value));
-        document.getElementById('destino_promedio').value = promedio;
+        document.getElementById('destino_promedio').value = promedio.toFixed(2);
 
         let diferencia = Number(origen_pesoNeto.value) - Number(pesoNeto);
 
         document.getElementById('destino_diferencia').value = diferencia;
 
+        let porcentajeRestar = Math.floor(Number(origen_distancia.value) / 100) * 0.5
+        console.log(porcentajeRestar)
+        let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(destino_pesoNeto.value) * 1.5) / 100);
+        nuevoPesoNeto = nuevoPesoNeto - ((nuevoPesoNeto * porcentajeRestar) / 100);
+        console.log(nuevoPesoNeto)
+
+        if(nuevoPesoNeto > pesoNeto) {
+            console.log('El nuevo peso neto de origen es mayor al peso neto de destino');
+            window.dispatchEvent(new CustomEvent('notification', {
+                detail: {
+                    status: 'success', // success | danger | warning | info
+                    title: 'Todo bien',
+                    message: 'Se guardó correctamente'
+                }
+            }));
+        }
 
     })
 
@@ -173,7 +232,7 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
         document.getElementById('cantidadTotal').value = resultado;
 
         resultado = Number(origen_pesoNeto.value) / (Number(origen_terneros.value) + Number(origen_terneras.value));
-        document.getElementById('promedio').value = resultado;
+        document.getElementById('promedio').value = resultado.toFixed(2);
 
         resultado = (Number(origen_pesoNeto.value) - (Number(origen_pesoNeto.value) * (Number(origen_desbaste.value) / 100)));
         document.getElementById('pesoDesbaste').value = resultado;
@@ -188,7 +247,7 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
             document.getElementById('destino_pesoNeto').value = pesoNeto;
 
         let promedio = pesoNeto / (Number(destino_terneros.value) + Number(destino_terneras.value));
-        document.getElementById('destino_promedio').value = promedio;
+        document.getElementById('destino_promedio').value = promedio.toFixed(2);
 
         let diferencia = Number(origen_pesoNeto.value) - Number(pesoNeto);
 
@@ -296,7 +355,6 @@ if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() ===
 ///*********************     
 //                          EDIT CEREALES       
 //                                   ************************/
-
 
 if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')[0] === 'barlovento-cereales' || getUrlAfterAdmin().split('/')[0] === 'paihuen-cereales')) {
 
