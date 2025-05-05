@@ -54,6 +54,9 @@ class BarloventoIngresosResource extends Resource
                                         Forms\Components\TextInput::make('nombre')
                                             ->label('Consignatario')
                                             ->required(),
+                                        Forms\Components\TextInput::make('porcentajeConsignatario')
+                                            ->label('% Porcentaje')
+                                            ->required(),
                                     ])
                                     ->createOptionUsing(function (array $data): int {
                                         $consignatario = Consignatarios::create(['nombre' => $data['nombre']]);
@@ -68,6 +71,9 @@ class BarloventoIngresosResource extends Resource
                                     ->createOptionForm([
                                         Forms\Components\TextInput::make('nombre')
                                             ->label('Comisionista')
+                                            ->required(),
+                                        Forms\Components\TextInput::make('porcentajeComision')
+                                            ->label('% Porcentaje')
                                             ->required(),
                                     ])
                                     ->createOptionUsing(function (array $data): int {

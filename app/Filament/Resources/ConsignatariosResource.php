@@ -71,7 +71,7 @@ class ConsignatariosResource extends Resource
     {
         return [
             'index' => Pages\ListConsignatarios::route('/'),
-            'create' => Pages\CreateConsignatarios::route('/create'),
+            // 'create' => Pages\CreateConsignatarios::route('/create'),
             'edit' => Pages\EditConsignatarios::route('/{record}/edit'),
         ];
     }

@@ -71,7 +71,7 @@ class ComisionistasResource extends Resource
     {
         return [
             'index' => Pages\ListComisionistas::route('/'),
-            'create' => Pages\CreateComisionistas::route('/create'),
+            // 'create' => Pages\CreateComisionistas::route('/create'),
             'edit' => Pages\EditComisionistas::route('/{record}/edit'),
         ];
     }
