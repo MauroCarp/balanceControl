@@ -9,6 +9,114 @@ function getUrlAfterAdmin() {
     return '';
 }
 
+function showAlert(title, message) {
+    // Crear el contenedor del modal
+    const modalId = 'customAlertModal';
+    const fragment = document.createDocumentFragment();
+
+    const modalBackdrop = document.createElement('div');
+    modalBackdrop.id = modalId;
+    modalBackdrop.tabIndex = 999;
+    modalBackdrop.style.position = 'fixed';
+    modalBackdrop.style.top = '0';
+    modalBackdrop.style.left = '0';
+    modalBackdrop.style.width = '100%';
+    modalBackdrop.style.height = '100%';
+    modalBackdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    modalBackdrop.style.display = 'flex';
+    modalBackdrop.style.alignItems = 'center';
+    modalBackdrop.style.justifyContent = 'center';
+
+
+    const modalDialog = document.createElement('div');
+    modalDialog.style.maxWidth = '500px';
+    modalDialog.style.width = '100%';
+    modalDialog.style.margin = '0 auto';
+
+    const modalContent = document.createElement('div');
+    modalContent.style.backgroundColor = '#fff';
+    modalContent.style.borderRadius = '5px';
+    modalContent.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+    modalContent.style.overflow = 'hidden';
+
+    const modalHeader = document.createElement('div');
+    modalHeader.style.display = 'flex';
+    modalHeader.style.justifyContent = 'space-between';
+    modalHeader.style.alignItems = 'center';
+    modalHeader.style.padding = '15px';
+    modalHeader.style.borderBottom = '1px solid #ddd';
+
+    const modalTitle = document.createElement('h5');
+    modalTitle.style.margin = '0';
+    modalTitle.style.fontSize = '18px';
+    modalTitle.style.fontWeight = 'bold';
+    modalTitle.innerHTML = title + ' <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-1" style="width: 24px; height: 24px;display:inline-block;color:#dc3545"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0M3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5" /></svg>';
+    
+
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.style.background = 'none';
+    closeButton.style.border = 'none';
+    closeButton.style.fontSize = '20px';
+    closeButton.style.cursor = 'pointer';
+    closeButton.textContent = '×';
+    closeButton.setAttribute('aria-label', 'Cerrar');
+
+    modalHeader.appendChild(modalTitle);
+    modalHeader.appendChild(closeButton);
+
+    const modalBody = document.createElement('div');
+    modalBody.style.padding = '15px';
+
+    const modalMessage = document.createElement('p');
+    modalMessage.style.margin = '0';
+    modalMessage.textContent = message;
+
+    modalBody.appendChild(modalMessage);
+
+    const modalFooter = document.createElement('div');
+    modalFooter.style.display = 'flex';
+    modalFooter.style.justifyContent = 'flex-end';
+    modalFooter.style.padding = '15px';
+    modalFooter.style.borderTop = '1px solid #ddd';
+
+    const okButton = document.createElement('button');
+    okButton.type = 'button';
+    okButton.setAttribute('id','okButtonAlert');
+    okButton.style.backgroundColor = '#dc3545';
+    okButton.style.color = '#fff'; // Bootstrap danger color
+    okButton.style.border = 'none';
+    okButton.style.padding = '10px 20px';
+    okButton.style.borderRadius = '5px';
+    okButton.style.cursor = 'pointer';
+    okButton.textContent = 'OK';
+
+    modalFooter.appendChild(okButton);
+
+    modalContent.appendChild(modalHeader);
+    modalContent.appendChild(modalBody);
+    modalContent.appendChild(modalFooter);
+
+    modalDialog.appendChild(modalContent);
+    modalBackdrop.appendChild(modalDialog);
+
+    fragment.appendChild(modalBackdrop);
+
+    // Insertar el modal en el DOM
+
+    document.getElementsByTagName('body')[0].appendChild(fragment)
+    // Inicializar y mostrar el modal
+    // const modalElement = document.getElementById(modalId);
+
+    okButton.addEventListener('click', () => {
+
+        setTimeout(() => {
+            document.getElementById(modalId).remove();
+        }, 100);
+    });
+      
+}
+
 let getMermaHumedad = () => {
 
     fetch('/merma-humedad', {
@@ -160,34 +268,21 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
             document.getElementById('destino_diferencia').value = diferencia;
 
             if (Math.abs(Number(origen_pesoBruto.value) - Number(destino_pesoBruto.value)) > (Number(origen_pesoBruto.value) * 0.04)) {
-                console.log('El peso bruto de origen y destino difieren en más del 4%');
-                // showToast('El usuario fue creado correctamente');
-                window.dispatchEvent(new CustomEvent('notification', {
-                    detail: {
-                        status: 'success', // success | danger | warning | info
-                        title: 'Todo bien',
-                        message: 'Se guardó correctamente'
-                    }
-                }));
+
+                showAlert('Atención', 'El peso bruto de origen y destino difieren en más del 4%')
 
             }
 
             let porcentajeRestar = Math.floor(Number(origen_distancia.value) / 100) * 0.5
-            console.log(porcentajeRestar)
+
             let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(destino_pesoNeto.value) * 1.5) / 100);
             nuevoPesoNeto = nuevoPesoNeto - ((nuevoPesoNeto * porcentajeRestar) / 100);
-            console.log(nuevoPesoNeto)
 
             if(nuevoPesoNeto > pesoNeto) {
-
-                // showToast('El usuario fue creado correctamente');
-                window.dispatchEvent(new CustomEvent('notification', {
-                    detail: {
-                        status: 'success', // success | danger | warning | info
-                        title: 'Todo bien',
-                        message: 'Se guardó correctamente'
-                    }
-                }));
+                console.log(nuevoPesoNeto, pesoNeto)
+                console.log(nuevoPesoNeto.replace(',','.').toLocaleString('de-DE'), pesoNeto.replace(',','.').toLocaleString('de-DE'))
+                console.log(Number(nuevoPesoNeto).toLocaleString('de-DE'), Number(pesoNeto).toLocaleString('de-DE'))
+                showAlert('Atención', `El peso neto de origen es MAYOR al peso neto destino - Nuevo Peso Neto: ${nuevoPesoNeto.replace(',','.').toLocaleString('de-DE')} kg / Peso Neto Destino: ${pesoNeto.replace(',','.').toLocaleString('de-DE')} kg`)
             }
 
             
@@ -207,21 +302,14 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
         document.getElementById('destino_diferencia').value = diferencia;
 
         let porcentajeRestar = Math.floor(Number(origen_distancia.value) / 100) * 0.5
-        console.log(porcentajeRestar)
-        let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(destino_pesoNeto.value) * 1.5) / 100);
-        nuevoPesoNeto = nuevoPesoNeto - ((nuevoPesoNeto * porcentajeRestar) / 100);
-        console.log(nuevoPesoNeto)
 
-        if(nuevoPesoNeto > pesoNeto) {
-            console.log('El nuevo peso neto de origen es mayor al peso neto de destino');
-            window.dispatchEvent(new CustomEvent('notification', {
-                detail: {
-                    status: 'success', // success | danger | warning | info
-                    title: 'Todo bien',
-                    message: 'Se guardó correctamente'
-                }
-            }));
-        }
+            let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(destino_pesoNeto.value) * 1.5) / 100);
+            nuevoPesoNeto = nuevoPesoNeto - ((nuevoPesoNeto * porcentajeRestar) / 100);
+
+            if(nuevoPesoNeto > pesoNeto) {
+                showAlert('Atención', `El peso neto de origen es MAYOR al peso neto destino - Nuevo Peso Neto: ${nuevoPesoNeto.toLocaleString('de-DE')} kg / Peso Neto Destino: ${pesoNeto.toLocaleString('de-DE')} kg`)
+
+            }
 
     })
 
