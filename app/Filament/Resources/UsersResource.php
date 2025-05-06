@@ -61,7 +61,7 @@ class UsersResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\deleteAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
