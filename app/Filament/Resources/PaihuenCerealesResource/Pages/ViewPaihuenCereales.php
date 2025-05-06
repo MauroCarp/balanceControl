@@ -7,17 +7,24 @@ use App\Models\PaihuenCereales;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\Section;
+use Filament\Actions\EditAction;
+
+use Filament\Pages\Actions;
+
 
 class ViewPaihuenCereales extends ViewRecord
 {
     protected static string $resource = PaihuenCerealesResource::class;
 
-    protected function getHeaderWidgets(): array
+
+    protected function getHeaderActions(): array
     {
         return [
-            // Puedes agregar widgets aquí si es necesario
+            EditAction::make()
+            ->icon('heroicon-o-pencil-square'),
         ];
     }
+
 
     public function getTitle(): string
     {
