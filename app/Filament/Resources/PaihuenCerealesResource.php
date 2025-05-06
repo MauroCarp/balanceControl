@@ -184,6 +184,8 @@ class PaihuenCerealesResource extends Resource
                         return $state === 'siloBolsa' ? 'Silo Bolsa' : ($state === 'plantaSilo' ? 'Planta de Silo' : $state);
                     }),
             ])
+            ->defaultSort('fecha', 'desc') // Ordenar por la columna 'nombre' de forma ascendente
+
             ->filters([
                 //
             ])

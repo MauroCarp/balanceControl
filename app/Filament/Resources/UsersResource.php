@@ -57,6 +57,8 @@ class UsersResource extends Resource
                     ->date('d-m-Y')
                     ->sortable(),
             ])
+            ->defaultSort('created_at', 'asc') // Ordenar por la columna 'nombre' de forma ascendente
+
             ->filters([
                 //
             ])

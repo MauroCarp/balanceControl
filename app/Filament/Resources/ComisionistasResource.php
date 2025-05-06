@@ -47,11 +47,14 @@ class ComisionistasResource extends Resource
                     ->searchable()
                     ->label('% Comisión'),
             ])
+            ->defaultSort('nombre', 'asc') // Ordenar por la columna 'nombre' de forma ascendente
+
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
