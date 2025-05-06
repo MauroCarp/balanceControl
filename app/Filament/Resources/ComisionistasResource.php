@@ -17,7 +17,7 @@ class ComisionistasResource extends Resource
 {
     protected static ?string $model = Comisionistas::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-truck';
 
     public static function form(Form $form): Form
     {
