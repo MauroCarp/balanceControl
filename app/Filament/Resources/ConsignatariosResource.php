@@ -39,24 +39,26 @@ class ConsignatariosResource extends Resource
     {
         return $table
             ->columns([
-                'Nombre' => Tables\Columns\TextColumn::make('nombre')
-                    ->sortable()
-                    ->searchable(),
-                'Comisión' => Tables\Columns\TextColumn::make('porcentajeComision')
-                    ->sortable()
-                    ->searchable()
-                    ->label('% Comisión'),
+            'Nombre' => Tables\Columns\TextColumn::make('nombre')
+                ->sortable()
+                ->searchable(),
+            'Comisión' => Tables\Columns\TextColumn::make('porcentajeComision')
+                ->sortable()
+                ->searchable()
+                ->label('% Comisión'),
             ])
+            ->defaultSort('nombre', 'asc') // Ordenar por la columna 'nombre' de forma ascendente
             ->filters([
-                //
+            //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(), // Configura la acción de edición para abrirse en un modal
+            Tables\Actions\EditAction::make(), // Configura la acción de edición para abrirse en un modal
+            Tables\Actions\DeleteAction::make(), // Configura la acción de edición para abrirse en un modal
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+            Tables\Actions\BulkActionGroup::make([
+                Tables\Actions\DeleteBulkAction::make(),
+            ]),
             ]);
     }
 

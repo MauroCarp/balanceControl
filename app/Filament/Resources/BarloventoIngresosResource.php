@@ -272,6 +272,8 @@ class BarloventoIngresosResource extends Resource
                     ->sortable()
                     ->searchable(),
             ])
+            ->defaultSort('fecha', 'desc') // Ordenar por la columna 'nombre' de forma ascendente
+
             ->filters([
                 //
             ])

@@ -165,6 +165,8 @@ class BarloventoEgresosResource extends Resource
                         return null;
                     }),
             ])
+            ->defaultSort('fecha', 'desc') // Ordenar por la columna 'nombre' de forma ascendente
+
             ->filters([
                 //
             ])
