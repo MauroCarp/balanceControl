@@ -5,7 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\BarloventoEgresosResource\Pages;
 use App\Filament\Resources\BarloventoEgresosResource\RelationManagers;
 use App\Models\BarloventoEgresos;
-use App\Models\Comisionistas;
+use App\Models\DestinosEgresos;
 use App\Models\Consignatarios;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -43,9 +43,44 @@ class BarloventoEgresosResource extends Resource
                             ->label('Nº DTE')
                             ->required()
                             ->maxLength(191),
-                        Forms\Components\TextInput::make('flete')
-                            ->label('Flete/Camion')
-                            ->required(),
+                        Forms\Components\Select::make('flete')
+                            ->options(DestinosEgresos::where('tipo', 'FLETE')->pluck('nombre', 'id')->toArray())
+                            ->label('Flete/Camión')
+                            ->searchable()
+                            ->preload()                
+                            ->required()
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('nombre')
+                                    ->label('Flete / Camión')
+                                    ->required(),
+                            ])
+                            ->createOptionUsing(function (array $data): int {
+                                $destino = DestinosEgresos::create([
+                                    'nombre' => $data['nombre'],
+                                    'tipo' => 'FLETE',
+                                ]);
+                                return $destino->id;
+                            }),
+                        Forms\Components\TextInput::make('novillos')
+                            ->label('Novillos')
+                            ->numeric()
+                            ->required()
+                            ->id('novillos')
+                            ->default(0)
+                            ->maxLength(3),
+                        Forms\Components\TextInput::make('vaquillonas')
+                            ->label('Vaquillonas')
+                            ->numeric()
+                            ->required()
+                            ->default(0)
+                            ->id('vaquillonas')
+                            ->maxLength(3),
+                        Forms\Components\TextInput::make('cantidad')
+                            ->label('Cantidad')
+                            ->default(0)
+                            ->disabled()
+                            ->id('cantidad')
+                            ->maxLength(4),
                         Forms\Components\Grid::make(3)
                             ->schema([
                                 Forms\Components\Radio::make('tipoDestino') // Campo de tipo radio
@@ -57,33 +92,63 @@ class BarloventoEgresosResource extends Resource
                                     ->required()
                                     ->reactive()
                                     ->helperText('Selecciona el destino para mostrar los campos correspondientes.'), // Mensaje de ayuda
-                                Forms\Components\Radio::make('faenaPropia') // Campo de tipo radio
+                                Forms\Components\Select::make('faenaPropia')
+                                    ->options(DestinosEgresos::where('tipo', 'FP')->pluck('nombre', 'id')->toArray())
                                     ->label('Faena Propia')
-                                    ->options([
-                                        'carniceria' => 'Carniceria',
-                                        'salta' => 'Salta',
-                                        'exportacion' => 'Exportacion',
+                                    ->searchable()
+                                    ->preload()                
+                                    ->required()
+                                    ->visible(fn ($get) => $get('tipoDestino') === 'Faena Propia')
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('nombre')
+                                            ->label('Destino Faena Propia')
+                                            ->required(),
                                     ])
-                                    ->visible(fn ($get) => $get('tipoDestino') === 'Faena Propia'),
-                                Forms\Components\Radio::make('ventaTerceros') // Campo de tipo radio
-                                    ->label('Venta Terceros')
-                                    ->options([
-                                        'arreBeef' => 'Arre Beef',
-                                        'sanJose' => 'San Jose Carnes',
+                                    ->createOptionUsing(function (array $data): int {
+                                        $destino = DestinosEgresos::create([
+                                            'nombre' => $data['nombre'],
+                                            'tipo' => 'FP',
+                                        ]);
+                                        return $destino->id;
+                                    }),
+                                Forms\Components\Select::make('ventaTerceros')
+                                    ->options(DestinosEgresos::where('tipo', 'VT')->pluck('nombre', 'id')->toArray())
+                                    ->label('Venta a Terceros')
+                                    ->searchable()
+                                    ->preload()                
+                                    ->required()
+                                    ->visible(fn ($get) => $get('tipoDestino') === 'Venta a Terceros')
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('nombre')
+                                            ->label('Destino Venta a Terceros')
+                                            ->required(),
                                     ])
-                                    ->visible(fn ($get) => $get('tipoDestino') === 'Venta a Terceros'),
+                                    ->createOptionUsing(function (array $data): int {
+                                        $destino = DestinosEgresos::create([
+                                            'nombre' => $data['nombre'],
+                                            'tipo' => 'VT',
+                                        ]);
+                                        return $destino->id;
+                                    }),
                                 Forms\Components\Select::make('frigorifico')
-                                    ->options([
-                                    'La Pelegrinense' => 'La Pelegrinense',
-                                    'Matievich' => 'Matievich',
-                                    'Bustos y Beltran' => 'Bustos y Beltran',
-                                    'Arre Beef' => 'Arre Beef' 
-                                    ])
+                                    ->options(DestinosEgresos::where('tipo', 'FRIG')->pluck('nombre', 'id')->toArray())
                                     ->label('Frigorifico')
                                     ->searchable()
                                     ->preload()                
                                     ->required()
-                                    ->visible(fn ($get) => $get('tipoDestino') === 'Faena Propia'),
+                                    ->visible(fn ($get) => $get('tipoDestino') === 'Faena Propia')
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('nombre')
+                                            ->label('Frigorifico')
+                                            ->required(),
+                                    ])
+                                    ->createOptionUsing(function (array $data): int {
+                                        $destino = DestinosEgresos::create([
+                                            'nombre' => $data['nombre'],
+                                            'tipo' => 'FRIG',
+                                        ]);
+                                        return $destino->id;
+                                    }),
                             ]),
                         Forms\Components\Grid::make(4)
                             ->schema([
@@ -114,26 +179,7 @@ class BarloventoEgresosResource extends Resource
                                     ->dehydrated(false)
                                     ->id('pesoNetoDesbastado'),
                             ]),
-                        Forms\Components\TextInput::make('novillos')
-                            ->label('Novillos')
-                            ->numeric()
-                            ->required()
-                            ->id('novillos')
-                            ->default(0)
-                            ->maxLength(3),
-                        Forms\Components\TextInput::make('vaquillonas')
-                            ->label('Vaquillonas')
-                            ->numeric()
-                            ->required()
-                            ->default(0)
-                            ->id('vaquillonas')
-                            ->maxLength(3),
-                        Forms\Components\TextInput::make('cantidad')
-                            ->label('Cantidad')
-                            ->default(0)
-                            ->disabled()
-                            ->id('cantidad')
-                            ->maxLength(4),
+
                     ])
             ]); 
     }
