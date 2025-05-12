@@ -146,10 +146,6 @@ class BarloventoIngresosResource extends Resource
                                                 ->dehydrated(false)
                                                 ->reactive(),
                                             ]),
-                                            Forms\Components\Textarea::make('observaciones')
-                                            ->label('Observaciones')
-                                            ->maxLength(400)
-                                            ->rows(1),
                             ])
                                 ]),
                 Wizard\Step::make('Ingreso Destino')
@@ -215,6 +211,10 @@ class BarloventoIngresosResource extends Resource
                                     ->disabled()
                                     ->id('cantidadTotalDestino'),
                             ]),
+                        Forms\Components\Textarea::make('observaciones')
+                            ->label('Observaciones')
+                            ->maxLength(400)
+                            ->rows(1),
                         
                     ]),
                 Wizard\Step::make('Ingreso Gastos')
