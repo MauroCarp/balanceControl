@@ -60,6 +60,8 @@ class ComisionistasResource extends Resource
             ]);
     }
 
+    protected static bool $shouldRegisterNavigation = false;
+
     public static function getRelations(): array
     {
         return [

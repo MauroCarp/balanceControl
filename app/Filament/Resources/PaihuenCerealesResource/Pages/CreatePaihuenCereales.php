@@ -12,13 +12,13 @@ class CreatePaihuenCereales extends CreateRecord
 
     public function getTitle(): string
     {
-        return 'Nuevo Ingreso de Cereal'; // Cambia este texto al título deseado
+        return 'Nuevo Ingreso de Insumo'; // Cambia este texto al título deseado
 
     }
 
     public function getBreadcrumb(): string
     {
-        return 'Nuevo Ingreso de Cereal'; // Cambia este texto al breadcrumb deseado
+        return 'Nuevo Ingreso de Insumo'; // Cambia este texto al breadcrumb deseado
     }
 
     protected function getFormActions(): array

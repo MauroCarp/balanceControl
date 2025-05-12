@@ -14,18 +14,18 @@ class ListBarloventoCereales extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-            ->label('Nuevo Ingreso de Cereal'), // Cambia este texto al deseado
+            ->label('Nuevo Ingreso de Insumos'), // Cambia este texto al deseado
         ];
     }
 
     public function getTitle(): string
     {
-        return 'Ingresos de Cereal'; // Cambia este texto al título deseado
+        return 'Ingresos de Insumo'; // Cambia este texto al título deseado
 
     }
 
     public function getBreadcrumb(): string
     {
-        return 'Ingresos de Cereal'; // Cambia este texto al breadcrumb deseado
+        return 'Ingresos de Insumo'; // Cambia este texto al breadcrumb deseado
     }
 }

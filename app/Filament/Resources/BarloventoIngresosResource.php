@@ -15,6 +15,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\TextInput\Mask as Mask;
 use Filament\Infolists\Components\Section as InfolistSection;
 use Filament\Infolists\Components\Split;
 use Filament\Infolists\Components\TextEntry;
@@ -22,6 +23,7 @@ use Filament\Infolists\Components\Grid as GridInfolist;
 use Filament\Infolists\Components\Group;
 use Filament\Infolists\Infolist;
 use Illuminate\Support\Carbon;
+
 
 class BarloventoIngresosResource extends Resource
 {
@@ -46,47 +48,31 @@ class BarloventoIngresosResource extends Resource
                                     ->required(),
                                 Forms\Components\Select::make('consignatario')
                                     ->options(Consignatarios::pluck('nombre','id')->toArray())
-                                    ->label('Consignatario')
+                                    ->label('Consignatario / Comisionista')
                                     ->searchable()
                                     ->preload()
                                     ->required()
                                     ->createOptionForm([
                                         Forms\Components\TextInput::make('nombre')
-                                            ->label('Consignatario')
+                                            ->label('Consignatario / Comisionista')
                                             ->required(),
                                         Forms\Components\TextInput::make('porcentajeConsignatario')
-                                            ->label('% Porcentaje')
+                                            ->label('% Comision')
                                             ->required(),
                                     ])
                                     ->createOptionUsing(function (array $data): int {
                                         $consignatario = Consignatarios::create(['nombre' => $data['nombre']]);
                                         return $consignatario->id;
                                     }),
-                                Forms\Components\Select::make('comisionista')
-                                    ->options(Comisionistas::pluck('nombre', 'id')->toArray())
-                                    ->label('Comisionista')
-                                    ->searchable()
-                                    ->preload()
-                                    ->required()
-                                    ->createOptionForm([
-                                        Forms\Components\TextInput::make('nombre')
-                                            ->label('Comisionista')
-                                            ->required(),
-                                        Forms\Components\TextInput::make('porcentajeComision')
-                                            ->label('% Porcentaje')
-                                            ->required(),
-                                    ])
-                                    ->createOptionUsing(function (array $data): int {
-                                        $comisionista = Comisionistas::create(['nombre' => $data['nombre']]);
-                                        return $comisionista->id;
-                                    }),
-
-                                Forms\Components\Grid::make(4)
-                                    ->schema([
-                                        Forms\Components\TextInput::make('dte')
+                                    Forms\Components\TextInput::make('dte')
                                             ->label('Nº DTE')
                                             ->required()
-                                            ->maxLength(191),
+                                            ->maxLength(11)
+                                            ->mask('999999999-9')
+                                            ->helperText('Ingrese 9 dígitos seguidos de 1 dígito final, sin el guion.'),
+                                Forms\Components\Grid::make(3)
+                                    ->schema([
+                                        
                                         Forms\Components\TextInput::make('origen_terneros')
                                             ->label('Terneros')
                                             ->default(0)
@@ -112,7 +98,6 @@ class BarloventoIngresosResource extends Resource
                                     ->schema([
                                     Forms\Components\TextInput::make('origen_pesoBruto')
                                         ->label('Peso Bruto')
-                                        ->required()
                                         ->default(0)
                                         ->id('origen_pesoBruto')
                                         ->numeric(),
@@ -130,54 +115,45 @@ class BarloventoIngresosResource extends Resource
                                         ->default(0)
                                         ->dehydrated(false),
                                     ]),
-                                Forms\Components\TextInput::make('origen_distancia')
-                                    ->label('Distancia Recorrida')
-                                    ->required()
-                                    ->numeric()
-                                    ->id('origen_distancia')
-                                    ->maxLength(191),
-                                Forms\Components\Select::make('origen_desbaste')
-                                    ->options([2=>2,3=>3,4=>4,5=>5])
-                                    ->label('% Desbaste')
-                                    ->required()
-                                    ->id('origen_desbaste')
-                                    ->afterStateUpdated(function (callable $set, $state, $get) {
-                                        $set('pesoDesbaste', (float) $get('origen_pesoNeto') - ((float) $get('origen_pesoNeto') * ((float) $get('origen_desbaste') / 100)));
-                                    }),
-                                Forms\Components\TextInput::make('pesoDesbaste')
-                                    ->label('Peso Desbaste')
-                                    ->disabled()
-                                    ->id('pesoDesbaste')
-                                    ->default(0)
-                                    ->dehydrated(false)
-                                    ->reactive(),
+                                    Forms\Components\Grid::make(4)
+                                        ->schema([
+                                            Forms\Components\TextInput::make('origen_distancia')
+                                                ->label('Distancia Recorrida')
+                                                ->required()
+                                                ->numeric()
+                                                ->id('origen_distancia')
+                                                ->maxLength(191),
+                                            Forms\Components\Select::make('origen_desbaste')
+                                                ->options([2=>2,3=>3,4=>4,5=>5])
+                                                ->label('% Desbaste')
+                                                ->required()
+                                                ->id('origen_desbaste')
+                                                ->afterStateUpdated(function (callable $set, $state, $get) {
+                                                    $set('pesoDesbaste', (float) $get('origen_pesoNeto') - ((float) $get('origen_pesoNeto') * ((float) $get('origen_desbaste') / 100)));
+                                                }),
+                                            Forms\Components\TextInput::make('pesoDesbaste')
+                                                ->label('Peso Desbaste Comercial')
+                                                ->disabled()
+                                                ->id('pesoDesbaste')
+                                                ->default(0)
+                                                ->dehydrated(false)
+                                                ->reactive(),
+                                            Forms\Components\TextInput::make('pesoDesbasteTecnico')
+                                                ->label('Peso Desbaste Tecnico')
+                                                ->disabled()
+                                                ->id('pesoDesbasteTecnico')
+                                                ->default(0)
+                                                ->dehydrated(false)
+                                                ->reactive(),
+                                            ]),
+                                            Forms\Components\Textarea::make('observaciones')
+                                            ->label('Observaciones')
+                                            ->maxLength(400)
+                                            ->rows(1),
                             ])
                                 ]),
                 Wizard\Step::make('Ingreso Destino')
                     ->schema([
-                        Forms\Components\Grid::make(3)
-                            ->schema([
-                                Forms\Components\TextInput::make('destino_terneros')
-                                    ->label('Terneros')
-                                    ->required()
-                                    ->default(0)
-                                    ->numeric()
-                                    ->maxLength(3)
-                                    ->id('destino_terneros'),
-                                Forms\Components\TextInput::make('destino_terneras')
-                                    ->label('Terneras')
-                                    ->required()
-                                    ->numeric()
-                                    ->default(0)
-                                    ->maxLength(3)
-                                    ->id('destino_terneras'),
-                                Forms\Components\TextInput::make('cantidadTotalDestino')
-                                    ->label('Total Hacienda')
-                                    ->default(0)
-                                    ->dehydrated(false)
-                                    ->disabled()
-                                    ->id('cantidadTotalDestino'),
-                            ]),
                         Forms\Components\Grid::make(5)
                             ->schema([
                                 Forms\Components\TextInput::make('destino_pesoBruto')
@@ -216,6 +192,30 @@ class BarloventoIngresosResource extends Resource
                                     ->reactive()
                                     ->id('destino_diferencia')
                                 ]),
+                        Forms\Components\Grid::make(3)
+                            ->schema([
+                                Forms\Components\TextInput::make('destino_terneros')
+                                    ->label('Terneros')
+                                    ->required()
+                                    ->default(0)
+                                    ->numeric()
+                                    ->maxLength(3)
+                                    ->id('destino_terneros'),
+                                Forms\Components\TextInput::make('destino_terneras')
+                                    ->label('Terneras')
+                                    ->required()
+                                    ->numeric()
+                                    ->default(0)
+                                    ->maxLength(3)
+                                    ->id('destino_terneras'),
+                                Forms\Components\TextInput::make('cantidadTotalDestino')
+                                    ->label('Total Hacienda')
+                                    ->default(0)
+                                    ->dehydrated(false)
+                                    ->disabled()
+                                    ->id('cantidadTotalDestino'),
+                            ]),
+                        
                     ]),
                 Wizard\Step::make('Ingreso Gastos')
                     ->schema([

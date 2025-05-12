@@ -21,7 +21,7 @@ class ViewPaihuenCereales extends ViewRecord
 
     public function getTitle(): string
     {
-        return 'Detalle Ingreso Cereales'; // Cambia este texto al título deseado
+        return 'Detalle Ingreso Insumos'; // Cambia este texto al título deseado
 
     }
 

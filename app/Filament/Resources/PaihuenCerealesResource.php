@@ -27,7 +27,7 @@ class PaihuenCerealesResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-right-start-on-rectangle';
     protected static ?string $navigationGroup = 'Paihuen'; // Agrupa en "Barlovento"
-    protected static ?string $navigationLabel = 'Ingresos Cereales'; // Nombre del 
+    protected static ?string $navigationLabel = 'Ingresos Insumos'; // Nombre del 
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
@@ -37,7 +37,7 @@ class PaihuenCerealesResource extends Resource
                 Forms\Components\Grid::make(4)
                     ->schema([
                         Forms\Components\Select::make('cereal')
-                            ->label('Cereal')
+                            ->label('Insumo')
                             ->options([
                                 'Maiz' => 'Maiz',
                                 'Soja' => 'Soja',
@@ -158,7 +158,7 @@ class PaihuenCerealesResource extends Resource
                         return \Carbon\Carbon::parse($state)->format('d-m-Y');
                     }),
                 Tables\Columns\TextColumn::make('cereal')
-                    ->label('Cereal')
+                    ->label('Insumo')
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('cartaPorte')
@@ -210,7 +210,7 @@ class PaihuenCerealesResource extends Resource
                                 TextEntry::make('cereal')
                                     ->size('lg')
                                     ->weight('bold')
-                                    ->label('Cereal')
+                                    ->label('Insumo')
                                     ->size('lg')
                                     ->weight('bold'),
                                 TextEntry::make('fecha')

@@ -9,4 +9,5 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateConsignatarios extends CreateRecord
 {
     protected static string $resource = ConsignatariosResource::class;
+    
 }
