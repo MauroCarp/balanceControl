@@ -309,7 +309,7 @@ class BarloventoIngresosResource extends Resource
             // Sección 1: Información General
             InfolistSection::make('Información General')
             ->schema([
-                GridInfolist::make(4)
+                GridInfolist::make(3)
                     ->schema([
                         TextEntry::make('fecha')
                             ->label('Fecha')
@@ -321,13 +321,6 @@ class BarloventoIngresosResource extends Resource
                             ->weight('bold')
                             ->getStateUsing(function ($record) {
                                 return Consignatarios::find($record->consignatario)?->nombre ?? '-';
-                            }),
-                        TextEntry::make('comisionista')
-                            ->label('Comisionista')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->getStateUsing(function ($record) {
-                                return Comisionistas::find($record->comisionista)?->nombre ?? '-';
                             }),
                         TextEntry::make('dte')
                             ->label('N° DTE')
@@ -386,6 +379,9 @@ class BarloventoIngresosResource extends Resource
                                         ->getStateUsing(function ($record) {
                                             return number_format(($record->origen_pesoBruto - $record->origen_pesoNeto), 0, ',', '.') . ' Kg';
                                         }),
+                                ]),
+                                GridInfolist::make(4)
+                                    ->schema([
                                     TextEntry::make('origen_distancia')
                                         ->label('Distancia Recorrida')
                                         ->size('lg')
@@ -398,11 +394,22 @@ class BarloventoIngresosResource extends Resource
                                         ->size('lg')
                                         ->weight('bold'),
                                     TextEntry::make('origen_pesoDesbaste')
-                                        ->label('Peso Desbaste')
+                                        ->label('Peso Desbaste Comercial    ')
                                         ->size('lg')
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
                                             return number_format(($record->origen_pesoNeto - ($record->origen_pesoNeto * ($record->origen_desbaste / 100))), 0, ',', '.') . ' Kg';
+                                        }),
+                                    TextEntry::make('origen_pesoDesbasteTecnico')
+                                        ->label('Peso Desbaste Tecnico')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                            $porcentajeRestar = floor($record->origen_distancia / 100) * 0.5;
+
+                                            $nuevoPesoNeto = $record->origen_pesoNeto - (($record->origen_pesoNeto * 1.5) / 100);
+                                            $nuevoPesoNeto = $nuevoPesoNeto - (($nuevoPesoNeto * $porcentajeRestar) / 100);
+                                            return number_format($nuevoPesoNeto, 0, ',', '.') . ' Kg';
                                         }),
                                 ]),
                         ]),
@@ -458,13 +465,10 @@ class BarloventoIngresosResource extends Resource
                                         ->getStateUsing(function ($record) {
                                             return number_format(($record->origen_pesoBruto - $record->origen_pesoNeto), 0, ',', '.') . ' Kg';
                                         }),
-                                    TextEntry::make('origen_distancia')
-                                        ->label('Distancia Recorrida')
+                                    TextEntry::make('observaciones')
+                                        ->label('Observaciones')
                                         ->size('lg')
-                                        ->weight('bold')
-                                        ->getStateUsing(function ($record) {
-                                            return $record->origen_distancia . ' Km';
-                                        }),
+                                        ->weight('bold'),
                                 ]),
                         ]),
                 ]),
