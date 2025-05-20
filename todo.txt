@@ -1,5 +1,0 @@
-Opciones de faena propia y ventas tercereo select con opciones -> crear nueva tabla en bd para poder ir agregando otros
-Opciones de Flete Camion select con opciones -> crear nueva tabla en bd para poder ir agregando otros
-Peso neto con desbaste tecnico sobre el neto (distancia recorrida)
-Peso neto con desbaste comercial sobre el neto (porcentaje elejido)
-Agregar columna observaciones a tabla de ingresos

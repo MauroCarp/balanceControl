@@ -273,15 +273,20 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
 
             }
 
-            let porcentajeRestar = Math.floor(Number(origen_distancia.value) / 100) * 0.5
+            let distancia = Number(origen_distancia.value);
 
-            let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(destino_pesoNeto.value) * 1.5) / 100);
-            nuevoPesoNeto = nuevoPesoNeto - ((nuevoPesoNeto * porcentajeRestar) / 100);
+            let porcentajeRestar = 0;
+
+            if (distancia < 300) {
+                porcentajeRestar = 1.5 + (Math.floor(distancia / 100) * 0.5);
+            } else {
+                porcentajeRestar = Math.floor(distancia / 100) * 1 + ((distancia % 100) / 100 * 1);
+            }
+            console.log(porcentajeRestar)
+
+            let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(origen_pesoNeto.value) * porcentajeRestar) / 100);
 
             if(nuevoPesoNeto > pesoNeto) {
-                console.log(nuevoPesoNeto, pesoNeto)
-                console.log(nuevoPesoNeto.replace(',','.').toLocaleString('de-DE'), pesoNeto.replace(',','.').toLocaleString('de-DE'))
-                console.log(Number(nuevoPesoNeto).toLocaleString('de-DE'), Number(pesoNeto).toLocaleString('de-DE'))
                 showAlert('Atención', `El peso neto de origen es MAYOR al peso neto destino - Nuevo Peso Neto: ${nuevoPesoNeto.replace(',','.').toLocaleString('de-DE')} kg / Peso Neto Destino: ${pesoNeto.replace(',','.').toLocaleString('de-DE')} kg`)
             }
 
@@ -301,15 +306,23 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
 
         document.getElementById('destino_diferencia').value = diferencia;
 
-        let porcentajeRestar = Math.floor(Number(origen_distancia.value) / 100) * 0.5
+        let distancia = Number(origen_distancia.value);
 
-            let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(destino_pesoNeto.value) * 1.5) / 100);
-            nuevoPesoNeto = nuevoPesoNeto - ((nuevoPesoNeto * porcentajeRestar) / 100);
+        let porcentajeRestar = 0;
 
-            if(nuevoPesoNeto > pesoNeto) {
-                showAlert('Atención', `El peso neto de origen es MAYOR al peso neto destino - Nuevo Peso Neto: ${nuevoPesoNeto.toLocaleString('de-DE')} kg / Peso Neto Destino: ${pesoNeto.toLocaleString('de-DE')} kg`)
+        if (distancia < 300) {
+            porcentajeRestar = 1.5 + (Math.floor(distancia / 100) * 0.5);
+        } else {
+            porcentajeRestar = Math.floor(distancia / 100) * 1 + ((distancia % 100) / 100 * 1);
+        }
+        console.log(porcentajeRestar)
 
-            }
+        let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(origen_pesoNeto.value) * porcentajeRestar) / 100);
+
+        if(nuevoPesoNeto > pesoNeto) {
+            showAlert('Atención', `El peso neto de origen es MAYOR al peso neto destino - Nuevo Peso Neto: ${nuevoPesoNeto.toLocaleString('de-DE')} kg / Peso Neto Destino: ${pesoNeto.toLocaleString('de-DE')} kg`)
+
+        }
 
     })
 

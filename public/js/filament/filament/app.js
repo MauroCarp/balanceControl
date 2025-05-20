@@ -217,10 +217,18 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
         if(origen_distancia.value != ''){
 
             
-            let porcentajeRestar = Math.floor(Number(origen_distancia.value) / 100) * 0.5
+            let distancia = Number(origen_distancia.value);
 
-            let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(origen_pesoNeto.value) * 1.5) / 100);
-            nuevoPesoNeto = nuevoPesoNeto - ((nuevoPesoNeto * porcentajeRestar) / 100);
+            let porcentajeRestar = 0;
+
+            if (distancia < 300) {
+                porcentajeRestar = 1.5 + (Math.floor(distancia / 100) * 0.5);
+            } else {
+                porcentajeRestar = Math.floor(distancia / 100) * 1 + ((distancia % 100) / 100 * 1);
+            }
+            console.log(porcentajeRestar)
+
+            let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(origen_pesoNeto.value) * porcentajeRestar) / 100);
             document.getElementById('pesoDesbasteTecnico').value = nuevoPesoNeto.toFixed(2)
         }
 
@@ -240,10 +248,18 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
 
     origen_distancia.addEventListener('change',function(){
 
-        let porcentajeRestar = Math.floor(Number(origen_distancia.value) / 100) * 0.5
+        let distancia = Number(origen_distancia.value);
 
-        let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(origen_pesoNeto.value) * 1.5) / 100);
-        nuevoPesoNeto = nuevoPesoNeto - ((nuevoPesoNeto * porcentajeRestar) / 100);
+            let porcentajeRestar = 0;
+
+            if (distancia < 300) {
+                porcentajeRestar = 1.5 + (Math.floor(distancia / 100) * 0.5);
+            } else {
+                porcentajeRestar = Math.floor(distancia / 100) * 1 + ((distancia % 100) / 100 * 1);
+            }
+            console.log(porcentajeRestar)
+
+        let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(origen_pesoNeto.value) * porcentajeRestar) / 100);
         document.getElementById('pesoDesbasteTecnico').value = nuevoPesoNeto.toFixed(2)
             
     })
@@ -354,10 +370,18 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
 
             document.getElementById('destino_diferencia').value = diferencia;
 
-            let porcentajeRestar = Math.floor(Number(origen_distancia.value) / 100) * 0.5
+            let distancia = Number(origen_distancia.value);
 
-            let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(origen_pesoNeto.value) * 1.5) / 100);
-            nuevoPesoNeto = nuevoPesoNeto - ((nuevoPesoNeto * porcentajeRestar) / 100);
+            let porcentajeRestar = 0;
+
+            if (distancia < 300) {
+                porcentajeRestar = 1.5 + (Math.floor(distancia / 100) * 0.5);
+            } else {
+                porcentajeRestar = Math.floor(distancia / 100) * 1 + ((distancia % 100) / 100 * 1);
+            }
+            console.log(porcentajeRestar)
+
+            let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(origen_pesoNeto.value) * porcentajeRestar) / 100);
             document.getElementById('pesoDesbasteTecnico').value = nuevoPesoNeto.toFixed(2)
 
         }, 2000);

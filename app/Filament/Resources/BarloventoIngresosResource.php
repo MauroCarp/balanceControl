@@ -394,7 +394,7 @@ class BarloventoIngresosResource extends Resource
                                         ->size('lg')
                                         ->weight('bold'),
                                     TextEntry::make('origen_pesoDesbaste')
-                                        ->label('Peso Desbaste Comercial    ')
+                                        ->label('Peso Desbaste Comercial')
                                         ->size('lg')
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
@@ -405,10 +405,16 @@ class BarloventoIngresosResource extends Resource
                                         ->size('lg')
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
-                                            $porcentajeRestar = floor($record->origen_distancia / 100) * 0.5;
 
-                                            $nuevoPesoNeto = $record->origen_pesoNeto - (($record->origen_pesoNeto * 1.5) / 100);
-                                            $nuevoPesoNeto = $nuevoPesoNeto - (($nuevoPesoNeto * $porcentajeRestar) / 100);
+                                            $porcentajeRestar = 0;
+
+                                            if ($record->origen_distancia < 300) {
+                                                $porcentajeRestar = 1.5 + (floor($record->origen_distancia / 100) * 0.5);
+                                            } else {
+                                                $porcentajeRestar = floor($record->origen_distanci / 100) * 1 + (($record->origen_distanci % 100) / 100 * 1);
+                                            }
+
+                                            $nuevoPesoNeto = $origen_pesoNeto - (($origen_pesoNeto * $porcentajeRestar) / 100);
                                             return number_format($nuevoPesoNeto, 0, ',', '.') . ' Kg';
                                         }),
                                 ]),
