@@ -48,6 +48,7 @@ class PaihuenCerealesResource extends Resource
                                 ])
                             ->default('Maiz')
                             ->required()
+                            ->reactive()
                             ->id('cereal')
                             ->searchable() // Permite buscar o escribir valores personalizados
                             ->createOptionForm([
@@ -116,41 +117,48 @@ class PaihuenCerealesResource extends Resource
                                         'muyBuena' => 'Muy Buena',
                                     ])
                                     ->required(),
-                            ]),
+                            ])->visible(fn ($get) => in_array($get('cereal'), ['Maiz', 'Soja', 'Cascara de mani'])),
                         Forms\Components\TextInput::make('materiasExtranas')
                             ->label('Materias Extrañas %')
                             ->id('mermaMaterias')
                             ->numeric()
-                            ->default(0),
+                            ->default(0)
+                            ->visible(fn ($get) => in_array($get('cereal'), ['Maiz', 'Soja', 'Cascara de mani'])),
                         Forms\Components\TextInput::make('tierra')
                             ->label('Contiene Tierra %')
                             ->id('mermaTierra')
                             ->numeric()
-                            ->default(0),
+                            ->default(0)
+                            ->visible(fn ($get) => in_array($get('cereal'), ['Maiz', 'Soja', 'Cascara de mani'])),
                         Forms\Components\TextInput::make('olor')
                             ->label('Olor %')
                             ->id('mermaOlor')
                             ->numeric()
-                            ->default(0),
+                            ->default(0)
+                            ->visible(fn ($get) => in_array($get('cereal'), ['Maiz', 'Soja', 'Cascara de mani'])),
                         Forms\Components\TextInput::make('pesoNetoHumedad')
                             ->id('pesoNetoHumedad')
                             ->label('Peso Neto por Mermas')
                             ->disabled()
                             ->dehydrated(false)
-                            ->default(0),
+                            ->default(0)
+                            ->visible(fn ($get) => in_array($get('cereal'), ['Maiz', 'Soja', 'Cascara de mani'])),
                         Forms\Components\Grid::make(4)
                             ->schema([
                                     Forms\Components\Checkbox::make('granosRotos')
-                                        ->label('Granos Dañados'),
+                                        ->label('Granos Dañados')
+                                        ->visible(fn ($get) => in_array($get('cereal'), ['Maiz', 'Soja', 'Cascara de mani'])),
                                     Forms\Components\Checkbox::make('granosQuebrados')
-                                        ->label('Granos Quebrados'),
+                                        ->label('Granos Quebrados')
+                                        ->visible(fn ($get) => in_array($get('cereal'), ['Maiz', 'Soja', 'Cascara de mani'])),
                                     Forms\Components\Radio::make('destino')
                                         ->label('Destino/Almacenamiento')
                                         ->options([
                                             'plantaSilo' => 'Planta de Silo',
                                             'siloBolsa' => 'Silo Bolsa',
                                         ])
-                                        ->required(),
+                                        ->required()
+                                        ->visible(fn ($get) => in_array($get('cereal'), ['Maiz', 'Soja', 'Cascara de mani'])),
                                     Forms\Components\Textarea::make('observaciones')
                                         ->label('Observaciones')
                                         ->maxLength(400)
@@ -208,7 +216,8 @@ class PaihuenCerealesResource extends Resource
                         TextEntry::make('humedad')
                             ->size('lg')
                             ->weight('bold')
-                            ->label('% de Humedad'),
+                            ->label('% de Humedad')
+                            ->visible(fn ($record) => in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])),
                         TextEntry::make('mermaHumedad')
                             ->size('lg')
                             ->weight('bold')
@@ -221,7 +230,8 @@ class PaihuenCerealesResource extends Resource
                                 ->value('merma');
 
                                 return $merma . '%';
-                            }),
+                            })
+                            ->visible(fn ($record) => in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])),
                         TextEntry::make('mermaManipuleo')
                             ->size('lg')
                             ->weight('bold')
@@ -242,27 +252,33 @@ class PaihuenCerealesResource extends Resource
                                     "Mijo"=>0.25];
 
                                 return $mermaManipuleo[$record->cereal] . '%';
-                            }),
+                            })
+                            ->visible(fn ($record) => in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])),
                         TextEntry::make('calidad')
                             ->size('lg')
                             ->weight('bold')
                             ->label('Calidad')
-                            ->formatStateUsing(fn ($state) => (($state == 'muyBuena') ? 'Muy Buena' : ucfirst($state))),
+                            ->formatStateUsing(fn ($state) => (($state == 'muyBuena') ? 'Muy Buena' : ucfirst($state)))
+                            ->visible(fn ($record) => in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])),
                         TextEntry::make('materiasExtranas')
                             ->size('lg')
                             ->weight('bold')
                             ->label('Materias Extrañas %')
                             ->getStateUsing(function ($record) {
                                 return $record->materiasExtranas;
-                            }),
+                            })
+                            ->visible(fn ($record) => in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])),
+                            
                          TextEntry::make('tierra')
                             ->size('lg')
                             ->weight('bold')
-                            ->label('Contiene Tierra %'),
+                            ->label('Contiene Tierra %')
+                            ->visible(fn ($record) => in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])),
                          TextEntry::make('olor')
                             ->size('lg')
                             ->weight('bold')
-                            ->label('Olor %'),                        
+                            ->label('Olor %')
+                            ->visible(fn ($record) => in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])),
                         TextEntry::make('pesoNetoHumedad')
                             ->size('lg')
                             ->weight('bold')
@@ -295,22 +311,26 @@ class PaihuenCerealesResource extends Resource
                                 $resultado = ($pesoNeto - ($pesoNeto * ($merma / 100)));
 
                                 return number_format($resultado,0,',','.') . ' Kg';
-                            }),
+                            })
+                            ->visible(fn ($record) => in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])),
                         TextEntry::make('granosRotos')
                             ->size('lg')
                             ->weight('bold')
                             ->label('Granos Dañados')
-                            ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No')),
+                            ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No'))
+                            ->visible(fn ($record) => in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])),
                         TextEntry::make('granosQuebrados')
                             ->size('lg')
                             ->weight('bold')
                             ->label('Granos Quebrados')
-                            ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No')),
+                            ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No'))
+                            ->visible(fn ($record) => in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])),
                         TextEntry::make('destino')
                             ->size('lg')
                             ->weight('bold')
                             ->label('Destino/Almacenamiento')
-                            ->formatStateUsing(fn ($state) => ($state == 'plantaSilo' ? 'Planta/Silo' : 'Silo Bolsa')),
+                            ->formatStateUsing(fn ($state) => ($state == 'plantaSilo' ? 'Planta/Silo' : 'Silo Bolsa'))
+                            ->visible(fn ($record) => in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])),
                         TextEntry::make('observaciones')
                             ->size('lg')
                             ->weight('bold'),                      

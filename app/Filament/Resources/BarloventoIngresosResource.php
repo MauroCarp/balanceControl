@@ -260,13 +260,6 @@ class BarloventoIngresosResource extends Resource
                     ->formatStateUsing(function ($state) {
                         return Consignatarios::find($state)?->nombre ?? '-';
                     }),
-                Tables\Columns\TextColumn::make('comisionista')
-                    ->label('Comisionista')
-                    ->sortable()
-                    ->searchable()
-                    ->formatStateUsing(function ($state) {
-                        return Comisionistas::find($state)?->nombre ?? '-';
-                    }),
                 Tables\Columns\TextColumn::make('dte')
                     ->label('Nº DTE')
                     ->sortable()
@@ -512,7 +505,7 @@ class BarloventoIngresosResource extends Resource
                                         ->size('lg')
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
-                                            $comision = Comisionistas::find($record->comisionista)?->porcentajeComision ?? 0;
+                                            $comision = Consignatarios::find($record->consignatario)?->porcentajeComision ?? 0;
                                             $costoTotal = $record->precioKg * $record->origen_pesoNeto;
                                             $totalConIva = $costoTotal + (($costoTotal * 10.5) /100);
 
@@ -550,7 +543,7 @@ class BarloventoIngresosResource extends Resource
                                         ->size('lg')
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
-                                            $comision = Comisionistas::find($record->comisionista)?->porcentajeComision ?? 0;
+                                            $comision = Consignatarios::find($record->consignatario)?->porcentajeComision ?? 0;
                                             $costoTotal = $record->precioKg * $record->origen_pesoNeto;
                                             $totalConIva = $costoTotal + (($costoTotal * 10.5) /100);
 
@@ -563,7 +556,7 @@ class BarloventoIngresosResource extends Resource
                                         ->size('lg')
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
-                                            $comision = Comisionistas::find($record->comisionista)?->porcentajeComision ?? 0;
+                                            $comision = Consignatarios::find($record->consignatario)?->porcentajeComision ?? 0;
                                             $costoTotal = $record->precioKg * $record->origen_pesoNeto;
                                             $totalConIva = $costoTotal + (($costoTotal * 10.5) /100);
 

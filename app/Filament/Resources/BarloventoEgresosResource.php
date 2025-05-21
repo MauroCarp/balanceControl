@@ -42,7 +42,9 @@ class BarloventoEgresosResource extends Resource
                         Forms\Components\TextInput::make('dte')
                             ->label('Nº DTE')
                             ->required()
-                            ->maxLength(191),
+                            ->maxLength(11)
+                            ->mask('999999999-9')
+                            ->helperText('Ingrese 9 dígitos seguidos de 1 dígito final, sin el guion.'),
                         Forms\Components\Select::make('flete')
                             ->options(DestinosEgresos::where('tipo', 'FLETE')->pluck('nombre', 'id')->toArray())
                             ->label('Flete/Camión')
