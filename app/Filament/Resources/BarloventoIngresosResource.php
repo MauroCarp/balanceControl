@@ -511,14 +511,19 @@ class BarloventoIngresosResource extends Resource
                                         ->size('lg')
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
-                                            return '$ ' . number_format(($record->precioKg * $record->origen_pesoNeto), 2, ',', '.');
+
+                                            $pesoNetoDesbasteComercial = $record->origen_pesoNeto - ($record->origen_pesoNeto * ($record->origen_desbaste / 100));
+
+                                            return '$ ' . number_format(($record->precioKg * $pesoNetoDesbasteComercial), 2, ',', '.');
                                         }),
                                     TextEntry::make('iva')
                                         ->label('$ Total c/IVA')
                                         ->size('lg')
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
-                                            $costoTotal = $record->precioKg * $record->origen_pesoNeto;
+                                            $pesoNetoDesbasteComercial = $record->origen_pesoNeto - ($record->origen_pesoNeto * ($record->origen_desbaste / 100));
+
+                                            $costoTotal = $record->precioKg * $pesoNetoDesbasteComercial;
                                             $totalConIva = $costoTotal + (($costoTotal * 10.5) /100);
                                             return '$ ' . number_format($totalConIva, 2, ',', '.');
                                         }),
@@ -528,7 +533,9 @@ class BarloventoIngresosResource extends Resource
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
                                             $comision = Consignatarios::find($record->consignatario)?->porcentajeComision ?? 0;
-                                            $costoTotal = $record->precioKg * $record->origen_pesoNeto;
+                                            $pesoNetoDesbasteComercial = $record->origen_pesoNeto - ($record->origen_pesoNeto * ($record->origen_desbaste / 100));
+                                            
+                                            $costoTotal = $record->precioKg * $pesoNetoDesbasteComercial;
                                             $totalConIva = $costoTotal + (($costoTotal * 10.5) /100);
 
                                             return $comision . '% - $ ' . number_format((($totalConIva * $comision) / 100),2,',','.');
@@ -566,7 +573,9 @@ class BarloventoIngresosResource extends Resource
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
                                             $comision = Consignatarios::find($record->consignatario)?->porcentajeComision ?? 0;
-                                            $costoTotal = $record->precioKg * $record->origen_pesoNeto;
+                                            $pesoNetoDesbasteComercial = $record->origen_pesoNeto - ($record->origen_pesoNeto * ($record->origen_desbaste / 100));
+
+                                            $costoTotal = $record->precioKg * $pesoNetoDesbasteComercial;
                                             $totalConIva = $costoTotal + (($costoTotal * 10.5) /100);
 
 
@@ -579,10 +588,12 @@ class BarloventoIngresosResource extends Resource
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
                                             $comision = Consignatarios::find($record->consignatario)?->porcentajeComision ?? 0;
-                                            $costoTotal = $record->precioKg * $record->origen_pesoNeto;
-                                            $totalConIva = $costoTotal + (($costoTotal * 10.5) /100);
+                                            $pesoNetoDesbasteComercial = $record->origen_pesoNeto - ($record->origen_pesoNeto * ($record->origen_desbaste / 100));
 
-                                            return '$ ' . number_format(($record->precioKg + (((($totalConIva * $comision) / 100) + $record->precioFlete + $record->precioOtrosGastos) / $record->origen_pesoNeto)), 2, ',', '.');
+                                            $costoTotal = $record->precioKg * $pesoNetoDesbasteComercial;
+
+                                            return '$ ' . number_format((($record->precioKg) + ((($costoTotal * $comision) / 100) / $pesoNetoDesbasteComercial) + ($record->precioFlete / $pesoNetoDesbasteComercial) + ($record->precioOtrosGastos / $pesoNetoDesbasteComercial)), 2, ',', '.');
+                                           
                                         }),
 
                                 ]),
