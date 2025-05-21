@@ -366,7 +366,7 @@ class BarloventoIngresosResource extends Resource
                                             return number_format($record->origen_pesoNeto, 0, ',', '.') . ' Kg';
                                         }),
                                     TextEntry::make('diferencia')
-                                        ->label('Diferencia')
+                                        ->label('Tara')
                                         ->size('lg')
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
@@ -448,7 +448,7 @@ class BarloventoIngresosResource extends Resource
                                         ->size('lg')
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
-                                            return number_format($record->origen_pesoBruto, 0, ',', '.') . ' Kg';
+                                            return number_format($record->destino_pesoBruto, 0, ',', '.') . ' Kg';
                                         }),
                                     TextEntry::make('destino_tara')
                                         ->label('Tara')
@@ -458,11 +458,33 @@ class BarloventoIngresosResource extends Resource
                                             return number_format($record->destino_tara, 0, ',', '.') . ' Kg';
                                         }),
                                     TextEntry::make('destino_diferencia')
-                                        ->label('Diferencia')
+                                        ->label('Peso Neto')
                                         ->size('lg')
                                         ->weight('bold')
                                         ->getStateUsing(function ($record) {
-                                            return number_format(($record->origen_pesoBruto - $record->origen_pesoNeto), 0, ',', '.') . ' Kg';
+                                            return number_format(($record->destino_pesoBruto - $record->destino_tara), 0, ',', '.') . ' Kg';
+                                        }),
+                                    TextEntry::make('diferencia_PNDesbasteTecnico_PNDestino')
+                                        ->label('Dif. Peso Neto con Desbaste Técnico - Peso Neto Destino')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->getStateUsing(function ($record) {
+                                           
+                                            $porcentajeRestar = 0;
+
+                                            if ($record->origen_distancia < 300) {
+                                                $porcentajeRestar = 1.5 + (floor($record->origen_distancia / 100) * 0.5);
+                                            } else {
+                                                $porcentajeRestar = floor($record->origen_distancia / 100) * 1 + (($record->origen_distancia % 100) / 100 * 1);
+                                            }
+
+                                            $pesoNetoDesbasteTecnico = $record->origen_pesoNeto - (($record->origen_pesoNeto * $porcentajeRestar) / 100);
+
+                                            $pesoNetoDestino = $record->destino_pesoBruto - $record->destino_tara;
+
+                                            $diferencia = $pesoNetoDesbasteTecnico - $pesoNetoDestino;
+
+                                            return number_format($diferencia, 0, ',', '.') . ' Kg';
                                         }),
                                     TextEntry::make('observaciones')
                                         ->label('Observaciones')
