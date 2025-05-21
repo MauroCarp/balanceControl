@@ -88,7 +88,7 @@ class PaihuenCerealesResource extends Resource
                                     ->disabled()
                                     ->dehydrated(false),
                             ]),
-                        Forms\Components\Grid::make(3)
+                        Forms\Components\Grid::make(4)
                             ->schema([
                                 Forms\Components\TextInput::make('humedad')
                                     ->id('humedad')
@@ -102,34 +102,48 @@ class PaihuenCerealesResource extends Resource
                                     ->disabled()
                                     ->dehydrated()
                                     ->default(0),
-                                Forms\Components\TextInput::make('pesoNetoHumedad')
-                                    ->id('pesoNetoHumedad')
-                                    ->label('Peso Neto de Humedad')
+                                Forms\Components\TextInput::make('mermaManipuleo')
+                                    ->id('mermaManipuleo')
+                                    ->label('% Manipuleo')
                                     ->disabled()
-                                    ->dehydrated(false)
-                                    ->default(0),
+                                    ->default(0)
+                                    ->dehydrated(false),
+                                Forms\Components\Select::make('calidad')
+                                    ->label('Calidad')
+                                    ->options([
+                                        'mala' => 'Mala',
+                                        'buena' => 'Buena',
+                                        'muyBuena' => 'Muy Buena',
+                                    ])
+                                    ->required(),
                             ]),
-                        Forms\Components\Checkbox::make('granosRotos')
-                            ->label('Granos Dañados'),
-                        Forms\Components\Checkbox::make('granosQuebrados')
-                            ->label('Granos Quebrados'),
-                        Forms\Components\Checkbox::make('tierra')
-                            ->label('Contiene Tierra'),
-                        Forms\Components\Select::make('calidad')
-                            ->label('Calidad')
-                            ->options([
-                                'mala' => 'Mala',
-                                'buena' => 'Buena',
-                                'muyBuena' => 'Muy Buena',
-                            ])
-                            ->required(),
-                        Forms\Components\Grid::make(3)
-                                ->schema([
-                                    Forms\Components\TextInput::make('materiasExtranas')
-                                        ->label('Materias Extrañas')
-                                        ->numeric()
-                                        ->default(0)
-                                        ->step(5),
+                        Forms\Components\TextInput::make('materiasExtranas')
+                            ->label('Materias Extrañas %')
+                            ->id('mermaMaterias')
+                            ->numeric()
+                            ->default(0),
+                        Forms\Components\TextInput::make('tierra')
+                            ->label('Contiene Tierra %')
+                            ->id('mermaTierra')
+                            ->numeric()
+                            ->default(0),
+                        Forms\Components\TextInput::make('olor')
+                            ->label('Olor %')
+                            ->id('mermaOlor')
+                            ->numeric()
+                            ->default(0),
+                        Forms\Components\TextInput::make('pesoNetoHumedad')
+                            ->id('pesoNetoHumedad')
+                            ->label('Peso Neto por Mermas')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->default(0),
+                        Forms\Components\Grid::make(4)
+                            ->schema([
+                                    Forms\Components\Checkbox::make('granosRotos')
+                                        ->label('Granos Dañados'),
+                                    Forms\Components\Checkbox::make('granosQuebrados')
+                                        ->label('Granos Quebrados'),
                                     Forms\Components\Radio::make('destino')
                                         ->label('Destino/Almacenamiento')
                                         ->options([
@@ -146,6 +160,164 @@ class PaihuenCerealesResource extends Resource
             ]);
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+        ->schema([
+                GridInfolist::make(4)
+                    ->schema([
+                        TextEntry::make('cereal')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('Insumo')
+                            ->size('lg')
+                            ->weight('bold'),
+                        TextEntry::make('fecha')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('Fecha')
+                            ->date('d-m-Y'),
+                        TextEntry::make('cartaPorte')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('Carta de Porte'),
+                        TextEntry::make('vendedor')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('Vendedor'),
+                        GridInfolist::make(3)
+                                ->schema([
+                                    TextEntry::make('pesoBruto')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->label('Peso Bruto')
+                                        ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.') . ' Kg'),
+                                        TextEntry::make('pesoTara')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->label('Tara')
+                                        ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.') . ' Kg'),
+                                    TextEntry::make('pesoNeto')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->label('Peso Neto')
+                                        ->getStateUsing(function ($record) {
+                                            return number_format(($record->pesoBruto - $record->pesoTara), 0, ',', '.') . ' Kg';
+                                        }),
+                                ]),
+                        TextEntry::make('humedad')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('% de Humedad'),
+                        TextEntry::make('mermaHumedad')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('% Merma de Humedad')
+                            ->getStateUsing(function ($record) {
+
+                                $merma = DB::table('merma_humedad')
+                                ->where('cereal', $record->cereal)
+                                ->where('humedad', $record->humedad)
+                                ->value('merma');
+
+                                return $merma . '%';
+                            }),
+                        TextEntry::make('mermaManipuleo')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('% Merma de Humedad')
+                            ->getStateUsing(function ($record) {
+
+                               $mermaManipuleo = [
+                                    "Maiz"=>0.25,
+                                    "Sorgo"=>0.25,   
+                                    "Trigo"=>0.10,
+                                    "Cebada"=>0.20,
+                                    "Avena"=>0.20,
+                                    "Soja"=>0.25,
+                                    "Girasol"=>0.20,
+                                    "Centeno"=>0.20,
+                                    "Triticale"=>0.5,
+                                    "Arroz"=>0.13,
+                                    "Mijo"=>0.25];
+
+                                return $mermaManipuleo[$record->cereal] . '%';
+                            }),
+                        TextEntry::make('calidad')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('Calidad')
+                            ->formatStateUsing(fn ($state) => (($state == 'muyBuena') ? 'Muy Buena' : ucfirst($state))),
+                        TextEntry::make('materiasExtranas')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('Materias Extrañas %')
+                            ->getStateUsing(function ($record) {
+                                return $record->materiasExtranas;
+                            }),
+                         TextEntry::make('tierra')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('Contiene Tierra %'),
+                         TextEntry::make('olor')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('Olor %'),                        
+                        TextEntry::make('pesoNetoHumedad')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('Peso Neto por Mermas')
+                            ->getStateUsing(function ($record) {
+
+                                $mermaHumedad = DB::table('merma_humedad')
+                                ->where('cereal', $record->cereal)
+                                ->where('humedad', $record->humedad)
+                                ->value('merma');
+
+                                $manipuleo = [
+                                    "Maiz"=>0.25,
+                                    "Sorgo"=>0.25,   
+                                    "Trigo"=>0.10,
+                                    "Cebada"=>0.20,
+                                    "Avena"=>0.20,
+                                    "Soja"=>0.25,
+                                    "Girasol"=>0.20,
+                                    "Centeno"=>0.20,
+                                    "Triticale"=>0.5,
+                                    "Arroz"=>0.13,
+                                    "Mijo"=>0.25];
+
+                                $mermaManipuleo = $manipuleo[$record->cereal];
+
+                                $pesoNeto = $record->pesoBruto - $record->pesoTara;
+                                $mermaMaterias = ($record->materiasExtranas > 1.5) ? $record->materiasExtranas - 1.5 : 0;
+                                $merma = $mermaHumedad + $mermaManipuleo + $mermaMaterias + $record->tierra + $record->olor;
+                                $resultado = ($pesoNeto - ($pesoNeto * ($merma / 100)));
+
+                                return number_format($resultado,0,',','.') . ' Kg';
+                            }),
+                        TextEntry::make('granosRotos')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('Granos Dañados')
+                            ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No')),
+                        TextEntry::make('granosQuebrados')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('Granos Quebrados')
+                            ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No')),
+                        TextEntry::make('destino')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->label('Destino/Almacenamiento')
+                            ->formatStateUsing(fn ($state) => ($state == 'plantaSilo' ? 'Planta/Silo' : 'Silo Bolsa')),
+                        TextEntry::make('observaciones')
+                            ->size('lg')
+                            ->weight('bold'),                      
+                    ]),
+        ]); 
+    }
+    
     public static function table(Table $table): Table
     {
         return $table
@@ -190,132 +362,20 @@ class PaihuenCerealesResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->label('')->color('primary'),
-                Tables\Actions\EditAction::make()->label(''),
-                Tables\Actions\DeleteAction::make()->label(''),
+                Tables\Actions\ViewAction::make()
+                ->label('')
+                ->color('primary'),
+                Tables\Actions\EditAction::make()
+                ->label(''),
+                Tables\Actions\DeleteAction::make()
+                ->label('')
+                ->color('danger'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
-    }
-
-    public static function infolist(Infolist $infolist): Infolist
-    {
-        return $infolist
-        ->schema([
-                GridInfolist::make(3)
-                    ->schema([
-                        GridInfolist::make(4)
-                            ->schema([
-                                TextEntry::make('cereal')
-                                    ->size('lg')
-                                    ->weight('bold')
-                                    ->label('Insumo')
-                                    ->size('lg')
-                                    ->weight('bold'),
-                                TextEntry::make('fecha')
-                                    ->size('lg')
-                                    ->weight('bold')
-                                    ->label('Fecha')
-                                    ->date('d-m-Y'),
-                                TextEntry::make('cartaPorte')
-                                    ->size('lg')
-                                    ->weight('bold')
-                                    ->label('Carta de Porte'),
-                                TextEntry::make('vendedor')
-                                    ->size('lg')
-                                    ->weight('bold')
-                                    ->label('Vendedor'),
-                            ]),
-                        TextEntry::make('pesoBruto')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('Peso Bruto')
-                            ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.') . ' Kg'),
-                            TextEntry::make('pesoTara')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('Tara')
-                            ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.') . ' Kg'),
-                        TextEntry::make('pesoNeto')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('Peso Neto')
-                            ->getStateUsing(function ($record) {
-                                return number_format(($record->pesoBruto - $record->pesoTara), 0, ',', '.') . ' Kg';
-                            }),
-                        TextEntry::make('humedad')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('% de Humedad'),
-                        TextEntry::make('mermaHumedad')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('% Merma de Humedad')
-                            ->getStateUsing(function ($record) {
-
-                                $merma = DB::table('merma_humedad')
-                                ->where('cereal', $record->cereal)
-                                ->where('humedad', $record->humedad)
-                                ->value('merma');
-
-                                return $merma . '%';
-                            }),
-                        TextEntry::make('pesoNetoHumedad')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('Peso Neto de Humedad')
-                            ->getStateUsing(function ($record) {
-
-                                $merma = DB::table('merma_humedad')
-                                ->where('cereal', $record->cereal)
-                                ->where('humedad', $record->humedad)
-                                ->value('merma');
-
-                                $pesoNeto = $record->pesoBruto - $record->pesoTara;
-
-                                $resultado = ($pesoNeto - ($pesoNeto * ($merma / 100)));
-
-                                return number_format($resultado,0,',','.') . ' Kg';
-                            }),
-                        TextEntry::make('granosRotos')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('Granos Dañados')
-                            ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No')),
-                        TextEntry::make('granosQuebrados')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('Granos Quebrados')
-                            ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No')),
-                        TextEntry::make('tierra')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('Contiene Tierra')
-                            ->formatStateUsing(fn ($state) => ($state ? 'Sí' : 'No')),
-                        TextEntry::make('calidad')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('Calidad')
-                            ->formatStateUsing(fn ($state) => (($state == 'muyBuena') ? 'Muy Buena' : ucfirst($state))),
-                        TextEntry::make('materiasExtranas')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('Materias Extrañas'),
-                        TextEntry::make('destino')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('Destino/Almacenamiento')
-                            ->formatStateUsing(fn ($state) => ($state == 'plantaSilo' ? 'Planta/Silo' : 'Silo Bolsa')),
-                        TextEntry::make('observaciones')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->formatStateUsing(fn ($state) => (($state == '' || is_null($state) ) ? '-' : 'j')),
-                      
-                    ]),
-        ]); 
     }
 
     public static function getRelations(): array

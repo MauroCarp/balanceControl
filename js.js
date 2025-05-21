@@ -117,8 +117,23 @@ function showAlert(title, message) {
       
 }
 
+const mermaManipuleo = {
+    "maiz": 0.25,
+    "sorgo": 0.25,   
+    "trigo": 0.10,
+    "cebada": 0.20,
+    "avena": 0.20,
+    "soja": 0.25,
+    "girasol": 0.20,
+    "centeno": 0.20,
+    "triticale": 0.5,
+    "arroz": 0.13,
+    "mijo": 0.25,
+}
+
 let getMermaHumedad = () => {
 
+    let cereal = document.getElementById('cereal').value;
     fetch('/merma-humedad', {
         method: 'POST',
         headers: {
@@ -126,7 +141,7 @@ let getMermaHumedad = () => {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
         body: JSON.stringify({
-            cereal: document.getElementById('cereal').value,
+            cereal: cereal,
             humedad: Number(document.getElementById('humedad').value)
         })
     })
@@ -134,10 +149,12 @@ let getMermaHumedad = () => {
     .then(data => {
         if (data.merma !== undefined) {
             document.getElementById('mermaHumedad').value = data.merma;
-
+            console.log(cereal)
             let pesoNeto = Number(document.getElementById('pesoNeto').value);
 
-            let resultado = (pesoNeto - (pesoNeto * (data.merma / 100)));
+            let merma = Number(data.merma) + mermaManipuleo[cereal] 
+
+            let resultado = (pesoNeto - (pesoNeto * (merma / 100)));
 
             document.getElementById('pesoNetoHumedad').value = resultado;
         } else {

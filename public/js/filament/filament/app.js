@@ -117,7 +117,23 @@ function showAlert(title, message) {
       
 }
 
+const mermaManipuleo = {
+    "Maiz": 0.25,
+    "Sorgo": 0.25,   
+    "Trigo": 0.10,
+    "Cebada": 0.20,
+    "Avena": 0.20,
+    "Soja": 0.25,
+    "Girasol": 0.20,
+    "Centeno": 0.20,
+    "Triticale": 0.5,
+    "Arroz": 0.13,
+    "Mijo": 0.25,
+}
+
 let getMermaHumedad = () => {
+
+    let cereal = document.getElementById('cereal').value;
 
     fetch('/merma-humedad', {
         method: 'POST',
@@ -126,18 +142,30 @@ let getMermaHumedad = () => {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
         body: JSON.stringify({
-            cereal: document.getElementById('cereal').value,
+            cereal: cereal,
             humedad: Number(document.getElementById('humedad').value)
         })
     })
     .then(response => response.json())
     .then(data => {
         if (data.merma !== undefined) {
+
+            let mermaOlor = document.getElementById('mermaOlor').value; 
+
+            let mermaMaterias = document.getElementById('mermaMaterias').value;
+            mermaMaterias = (mermaMaterias > 1.5) ? mermaMaterias - 1.5 : 0
+
+            let mermaTierra = document.getElementById('mermaTierra').value; 
+
+            let merma = Number(data.merma) + mermaManipuleo[cereal] + Number(mermaOlor) + Number(mermaMaterias) + Number(mermaTierra);
+            console.log(mermaManipuleo[cereal],mermaMaterias,mermaTierra,mermaOlor)
             document.getElementById('mermaHumedad').value = data.merma;
+
+            document.getElementById('mermaManipuleo').value = mermaManipuleo[cereal];
 
             let pesoNeto = Number(document.getElementById('pesoNeto').value);
 
-            let resultado = (pesoNeto - (pesoNeto * (data.merma / 100)));
+            let resultado = (pesoNeto - (pesoNeto * (merma / 100)));
 
             document.getElementById('pesoNetoHumedad').value = resultado;
         } else {
@@ -471,12 +499,13 @@ if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() ===
 
     })
 
-
-    let humedad = document.getElementById('humedad')
-
-    humedad.addEventListener('change', function() {
-            getMermaHumedad()
-    })
+    const fields = ['humedad', 'mermaMaterias', 'mermaTierra', 'mermaOlor'];
+    fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('change', getMermaHumedad);
+        }
+    });
 
 }
 
