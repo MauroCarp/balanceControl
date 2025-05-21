@@ -411,10 +411,10 @@ class BarloventoIngresosResource extends Resource
                                             if ($record->origen_distancia < 300) {
                                                 $porcentajeRestar = 1.5 + (floor($record->origen_distancia / 100) * 0.5);
                                             } else {
-                                                $porcentajeRestar = floor($record->origen_distanci / 100) * 1 + (($record->origen_distanci % 100) / 100 * 1);
+                                                $porcentajeRestar = floor($record->origen_distancia / 100) * 1 + (($record->origen_distancia % 100) / 100 * 1);
                                             }
 
-                                            $nuevoPesoNeto = $origen_pesoNeto - (($origen_pesoNeto * $porcentajeRestar) / 100);
+                                            $nuevoPesoNeto = $record->origen_pesoNeto - (($record->origen_pesoNeto * $porcentajeRestar) / 100);
                                             return number_format($nuevoPesoNeto, 0, ',', '.') . ' Kg';
                                         }),
                                 ]),
