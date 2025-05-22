@@ -9,6 +9,17 @@ function getUrlAfterAdmin() {
     return '';
 }
 
+function calcularDesbasteTecnico(pesoNetoOrigen, distancia) {
+    let porcentajeRestar = 0;
+
+    if (distancia < 300) {
+        porcentajeRestar = 1.5 + ((distancia * 0.5) / 100);
+    } else {
+        porcentajeRestar = Math.floor(distancia / 100) * 1 + ((distancia % 100) / 100 * 1);
+    }
+
+    return Number(pesoNetoOrigen) - ((Number(pesoNetoOrigen) * porcentajeRestar) / 100);
+}
 function showAlert(title, message) {
     // Crear el contenedor del modal
     const modalId = 'customAlertModal';
@@ -158,7 +169,7 @@ let getMermaHumedad = () => {
             let mermaTierra = document.getElementById('mermaTierra').value; 
 
             let merma = Number(data.merma) + mermaManipuleo[cereal] + Number(mermaOlor) + Number(mermaMaterias) + Number(mermaTierra);
-            console.log(mermaManipuleo[cereal],mermaMaterias,mermaTierra,mermaOlor)
+
             document.getElementById('mermaHumedad').value = data.merma;
 
             document.getElementById('mermaManipuleo').value = mermaManipuleo[cereal];
@@ -189,7 +200,7 @@ if(getUrlAfterAdmin() === '') {
         let btnPaihuen = document.getElementById('btnPaihuen')
 
         btnBarlovento.addEventListener('click', function() {
-            console.log('asdasdasd')
+
             btnBarlovento.style.display = 'none';
             btnPaihuen.style.display = 'none';
 
@@ -247,16 +258,8 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
             
             let distancia = Number(origen_distancia.value);
 
-            let porcentajeRestar = 0;
+            let nuevoPesoNeto = calcularDesbasteTecnico(Number(origen_pesoNeto.value), distancia);
 
-            if (distancia < 300) {
-                porcentajeRestar = 1.5 + (Math.floor(distancia / 100) * 0.5);
-            } else {
-                porcentajeRestar = Math.floor(distancia / 100) * 1 + ((distancia % 100) / 100 * 1);
-            }
-            console.log(porcentajeRestar)
-
-            let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(origen_pesoNeto.value) * porcentajeRestar) / 100);
             document.getElementById('pesoDesbasteTecnico').value = nuevoPesoNeto.toFixed(2)
         }
 
@@ -278,16 +281,8 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
 
         let distancia = Number(origen_distancia.value);
 
-            let porcentajeRestar = 0;
+        let nuevoPesoNeto = calcularDesbasteTecnico(Number(origen_pesoNeto.value), distancia);
 
-            if (distancia < 300) {
-                porcentajeRestar = 1.5 + (Math.floor(distancia / 100) * 0.5);
-            } else {
-                porcentajeRestar = Math.floor(distancia / 100) * 1 + ((distancia % 100) / 100 * 1);
-            }
-            console.log(porcentajeRestar)
-
-        let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(origen_pesoNeto.value) * porcentajeRestar) / 100);
         document.getElementById('pesoDesbasteTecnico').value = nuevoPesoNeto.toFixed(2)
             
     })
@@ -296,14 +291,14 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
     let destino_terneras = document.getElementById('destino_terneras')
 
     destino_terneros.addEventListener('change', function() {
-            let resultado = Number(destino_terneros.value) + Number(destino_terneras.value);
-            document.getElementById('cantidadTotalDestino').value = resultado;
+        let resultado = Number(destino_terneros.value) + Number(destino_terneras.value);
+        document.getElementById('cantidadTotalDestino').value = resultado;
 
-            let pesoNeto = Number(destino_pesoBruto.value) - Number(destino_tara.value);
-            document.getElementById('destino_pesoNeto').value = pesoNeto;
+        let pesoNeto = Number(destino_pesoBruto.value) - Number(destino_tara.value);
+        document.getElementById('destino_pesoNeto').value = pesoNeto;
 
-            let promedio = pesoNeto / (Number(destino_terneros.value) + Number(destino_terneras.value));
-            document.getElementById('destino_promedio').value = promedio.toFixed(2);
+        let promedio = pesoNeto / (Number(destino_terneros.value) + Number(destino_terneras.value));
+        document.getElementById('destino_promedio').value = promedio.toFixed(2);
     })
 
     destino_terneras.addEventListener('change', function() {
@@ -338,11 +333,12 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
 
             }
 
-            let desbasteTecnico = document.getElementById('pesoDesbasteTecnico').value
-            
+            let desbasteTecnico = calcularDesbasteTecnico(Number(origen_pesoNeto.value), Number(origen_distancia.value));
+console.log(desbasteTecnico)
+        console.log(pesoNeto)
             if(desbasteTecnico > pesoNeto) {
               
-                showAlert('Atención', `El peso neto de origen es MAYOR al peso neto destino - Nuevo Peso Neto: ${desbasteTecnico.replace(',','.').toLocaleString('de-DE')} kg / Peso Neto Destino: ${pesoNeto.replace(',','.').toLocaleString('de-DE')} kg`)
+                showAlert('Atención', `El peso neto con Desbaste Tecnico es MAYOR al Peso Neto destino - Peso Neto con Desbaste Tecnico: ${desbasteTecnico.replace(',','.').toLocaleString('de-DE')} kg / Peso Neto Destino: ${pesoNeto.toLocaleString('de-DE')} kg`)
             }
 
             
@@ -350,7 +346,7 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
     })
 
     destino_tara.addEventListener('change', function() {
-
+        console.log('estoy aca tara')
         let pesoNeto = Number(destino_pesoBruto.value) - Number(destino_tara.value);
         document.getElementById('destino_pesoNeto').value = pesoNeto;
 
@@ -361,15 +357,17 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
 
         document.getElementById('destino_diferencia').value = diferencia;
 
-        let desbasteTecnico = document.getElementById('pesoDesbasteTecnico').value
-
+        let desbasteTecnico = calcularDesbasteTecnico(Number(origen_pesoNeto.value), Number(origen_distancia.value));
+        
+        console.log(desbasteTecnico)
+        console.log(pesoNeto)
         if(desbasteTecnico > pesoNeto) {
-            showAlert('Atención', `El peso neto de origen es MAYOR al peso neto destino - Nuevo Peso Neto: ${desbasteTecnico.toLocaleString('de-DE')} kg / Peso Neto Destino: ${pesoNeto.toLocaleString('de-DE')} kg`)
+                showAlert('Atención', `El peso neto con Desbaste Tecnico es MAYOR al Peso Neto destino - Peso Neto con Desbaste Tecnico: ${desbasteTecnico.replace(',','.').toLocaleString('de-DE')} kg / Peso Neto Destino: ${pesoNeto.toLocaleString('de-DE')} kg`)
 
         }
 
     })
-
+    
     if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')[0] === 'barlovento-ingresos')) {
     
         setTimeout(() => {
@@ -400,17 +398,15 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
 
             let distancia = Number(origen_distancia.value);
 
-            let porcentajeRestar = 0;
+            let nuevoPesoNeto = calcularDesbasteTecnico(Number(origen_pesoNeto.value), distancia);
 
-            if (distancia < 300) {
-                porcentajeRestar = 1.5 + (Math.floor(distancia / 100) * 0.5);
-            } else {
-                porcentajeRestar = Math.floor(distancia / 100) * 1 + ((distancia % 100) / 100 * 1);
+            //CUANDO CARGA EDITAR INGRESO
+
+            if(nuevoPesoNeto > pesoNeto) {
+                showAlert('Atención', `El peso neto con Desbaste Tecnico es MAYOR al Peso Neto destino - Peso Neto con Desbaste Tecnico: ${nuevoPesoNeto.toLocaleString('de-DE')} kg / Peso Neto Destino: ${pesoNeto.toLocaleString('de-DE')} kg`)
             }
-            console.log(porcentajeRestar)
 
-            let nuevoPesoNeto = Number(origen_pesoNeto.value) - ((Number(origen_pesoNeto.value) * porcentajeRestar) / 100);
-            document.getElementById('pesoDesbasteTecnico').value = nuevoPesoNeto.toFixed(2)
+
 
         }, 2000);
     }
@@ -553,7 +549,7 @@ if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')
     })
 
     if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')[0] === 'paihuen-cereales')) {
-        console.log('hoalalsldald')
+
         setTimeout(() => {
 
             let resultado = Number(pesoBruto.value) - Number(tara.value);

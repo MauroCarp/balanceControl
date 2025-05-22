@@ -516,50 +516,68 @@ class BarloventoIngresosResource extends Resource
 
                                             return '$ ' . number_format(($record->precioKg * $pesoNetoDesbasteComercial), 2, ',', '.');
                                         }),
-                                    TextEntry::make('iva')
-                                        ->label('$ Total c/IVA')
-                                        ->size('lg')
-                                        ->weight('bold')
-                                        ->getStateUsing(function ($record) {
-                                            $pesoNetoDesbasteComercial = $record->origen_pesoNeto - ($record->origen_pesoNeto * ($record->origen_desbaste / 100));
+                                        TextEntry::make('iva')
+                                            ->label('$ Total c/IVA')
+                                            ->size('lg')
+                                            ->weight('bold')
+                                            ->getStateUsing(function ($record) {
+                                                $pesoNetoDesbasteComercial = $record->origen_pesoNeto - ($record->origen_pesoNeto * ($record->origen_desbaste / 100));
+    
+                                                $costoTotal = $record->precioKg * $pesoNetoDesbasteComercial;
+                                                $totalConIva = $costoTotal + (($costoTotal * 10.5) /100);
+                                                return '$ ' . number_format($totalConIva, 2, ',', '.');
+                                            }),
+                                    GridInfolist::make(4)
+                                    ->schema([
+                                        TextEntry::make('comision')
+                                            ->label('% Comisión')
+                                            ->size('lg')
+                                            ->weight('bold')
+                                            ->getStateUsing(function ($record) {
+                                                $comision = Consignatarios::find($record->consignatario)?->porcentajeComision ?? 0;
+                                                $pesoNetoDesbasteComercial = $record->origen_pesoNeto - ($record->origen_pesoNeto * ($record->origen_desbaste / 100));
+                                                
+                                                $costoTotal = $record->precioKg * $pesoNetoDesbasteComercial;
+                                                // $totalConIva = $costoTotal + (($costoTotal * 10.5) /100);
 
-                                            $costoTotal = $record->precioKg * $pesoNetoDesbasteComercial;
-                                            $totalConIva = $costoTotal + (($costoTotal * 10.5) /100);
-                                            return '$ ' . number_format($totalConIva, 2, ',', '.');
-                                        }),
-                                    TextEntry::make('comision')
-                                        ->label('% Comisión')
-                                        ->size('lg')
-                                        ->weight('bold')
-                                        ->getStateUsing(function ($record) {
-                                            $comision = Consignatarios::find($record->consignatario)?->porcentajeComision ?? 0;
-                                            $pesoNetoDesbasteComercial = $record->origen_pesoNeto - ($record->origen_pesoNeto * ($record->origen_desbaste / 100));
-                                            
-                                            $costoTotal = $record->precioKg * $pesoNetoDesbasteComercial;
-                                            $totalConIva = $costoTotal + (($costoTotal * 10.5) /100);
+                                                return $comision . '% - $ ' . number_format((($costoTotal * $comision) / 100),2,',','.');
+                                            }),
+                                        TextEntry::make('ivaComision')
+                                            ->label('$ IVA Comisión')
+                                            ->size('lg')
+                                            ->weight('bold')
+                                            ->getStateUsing(function ($record) {
+                                                $comision = Consignatarios::find($record->consignatario)?->porcentajeComision ?? 0;
+                                                $pesoNetoDesbasteComercial = $record->origen_pesoNeto - ($record->origen_pesoNeto * ($record->origen_desbaste / 100));
+                                                
+                                                $costoTotal = $record->precioKg * $pesoNetoDesbasteComercial;
+                                                $totalComision = ($costoTotal * $comision) / 100;
 
-                                            return $comision . '% - $ ' . number_format((($totalConIva * $comision) / 100),2,',','.');
-                                        }),
-                                    TextEntry::make('flete')
-                                        ->label('Flete')
-                                        ->size('lg')
-                                        ->weight('bold')
-                                        ->getStateUsing(function ($record) {
+                                                $iva = ($totalComision * 10.5) /100;
 
-                                            if($record->precioFlete != 0){
-                                                return 'SI';
-                                            } else {
-                                                return 'NO';
-                                            }
+                                                return '$ ' . number_format($iva,2,',','.');
+                                            }),
+                                        TextEntry::make('flete')
+                                            ->label('Flete')
+                                            ->size('lg')
+                                            ->weight('bold')
+                                            ->getStateUsing(function ($record) {
 
-                                        }),
-                                    TextEntry::make('precioFlete')
-                                        ->label('$ Flete')
-                                        ->size('lg')
-                                        ->weight('bold')
-                                        ->getStateUsing(function ($record) {
-                                            return '$ ' . number_format($record->precioFlete, 2, ',', '.');
-                                        }),
+                                                if($record->precioFlete != 0){
+                                                    return 'SI';
+                                                } else {
+                                                    return 'NO';
+                                                }
+
+                                            }),
+                                        TextEntry::make('precioFlete')
+                                            ->label('$ Flete')
+                                            ->size('lg')
+                                            ->weight('bold')
+                                            ->getStateUsing(function ($record) {
+                                                return '$ ' . number_format($record->precioFlete, 2, ',', '.');
+                                            }),
+                                    ]),
                                     TextEntry::make('precioOtrosGastos')
                                         ->label('Otros Gastos')
                                         ->size('lg')
