@@ -334,11 +334,10 @@ if(getUrlAfterAdmin() === 'barlovento-ingresos/create' || (getUrlAfterAdmin().sp
             }
 
             let desbasteTecnico = calcularDesbasteTecnico(Number(origen_pesoNeto.value), Number(origen_distancia.value));
-console.log(desbasteTecnico)
-        console.log(pesoNeto)
+
             if(desbasteTecnico > pesoNeto) {
               
-                showAlert('Atención', `El peso neto con Desbaste Tecnico es MAYOR al Peso Neto destino - Peso Neto con Desbaste Tecnico: ${desbasteTecnico.replace(',','.').toLocaleString('de-DE')} kg / Peso Neto Destino: ${pesoNeto.toLocaleString('de-DE')} kg`)
+                showAlert('Atención', `El peso neto con Desbaste Tecnico es MAYOR al Peso Neto destino - Peso Neto con Desbaste Tecnico: ${desbasteTecnico.toLocaleString('de-DE')} kg / Peso Neto Destino: ${pesoNeto.toLocaleString('de-DE')} kg`)
             }
 
             
@@ -346,7 +345,7 @@ console.log(desbasteTecnico)
     })
 
     destino_tara.addEventListener('change', function() {
-        console.log('estoy aca tara')
+
         let pesoNeto = Number(destino_pesoBruto.value) - Number(destino_tara.value);
         document.getElementById('destino_pesoNeto').value = pesoNeto;
 
@@ -358,12 +357,9 @@ console.log(desbasteTecnico)
         document.getElementById('destino_diferencia').value = diferencia;
 
         let desbasteTecnico = calcularDesbasteTecnico(Number(origen_pesoNeto.value), Number(origen_distancia.value));
-        
-        console.log(desbasteTecnico)
-        console.log(pesoNeto)
-        if(desbasteTecnico > pesoNeto) {
-                showAlert('Atención', `El peso neto con Desbaste Tecnico es MAYOR al Peso Neto destino - Peso Neto con Desbaste Tecnico: ${desbasteTecnico.replace(',','.').toLocaleString('de-DE')} kg / Peso Neto Destino: ${pesoNeto.toLocaleString('de-DE')} kg`)
 
+        if(desbasteTecnico > pesoNeto) {
+                showAlert('Atención', `El peso neto con Desbaste Tecnico es MAYOR al Peso Neto destino - Peso Neto con Desbaste Tecnico: ${desbasteTecnico.toLocaleString('de-DE')} kg / Peso Neto Destino: ${pesoNeto.toLocaleString('de-DE')} kg`)
         }
 
     })
@@ -399,6 +395,7 @@ console.log(desbasteTecnico)
             let distancia = Number(origen_distancia.value);
 
             let nuevoPesoNeto = calcularDesbasteTecnico(Number(origen_pesoNeto.value), distancia);
+            document.getElementById('pesoDesbasteTecnico').value = nuevoPesoNeto.toFixed(2)
 
             //CUANDO CARGA EDITAR INGRESO
 
