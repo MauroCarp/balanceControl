@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\BarloventoCerealesResource\Pages;
 use App\Filament\Resources\BarloventoCerealesResource\RelationManagers;
 use App\Models\BarloventoCereales;
+use App\Models\Insumos;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -37,24 +38,21 @@ class BarloventoCerealesResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('cereal')
                             ->label('Insumo')
-                            ->options([
-                                'Maiz' => 'Maiz',
-                                'Soja' => 'Soja',
-                                'Cascara de mani' => 'Cascara de Mani',
-                                'Piedras' => 'Piedras',
-                                'Urea' => 'Urea',
-                                'Harina de Soja' => 'Harina de Soja',
-                                ])
+                            ->options(\App\Models\Insumos::pluck('insumo', 'insumo')->toArray())
                             ->default('Maiz')
                             ->required()
                             ->reactive()
                             ->id('cereal')
                             ->searchable() // Permite buscar o escribir valores personalizados
                             ->createOptionForm([
-                                Forms\Components\TextInput::make('otroIngreso')
-                                ->label('Otro Ingreso')
+                                Forms\Components\TextInput::make('insumo')
+                                ->label('Nuevo Insumo')
                                 ->required(),
-                            ]),
+                            ])
+                            ->createOptionUsing(function (array $data): string {
+                                $insumo = Insumos::create(['insumo' => $data['insumo']]);
+                                return $insumo->insumo;
+                            }),
                         Forms\Components\DatePicker::make('fecha')
                             ->label('Fecha')
                             ->required(),

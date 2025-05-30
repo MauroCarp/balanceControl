@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PaihuenCerealesResource\Pages;
 use App\Filament\Resources\PaihuenCerealesResource\RelationManagers;
 use App\Http\Controllers\Api\MermaHumedadController;
+use App\Models\Insumos;
 use App\Models\PaihuenCereales;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -28,7 +29,7 @@ class PaihuenCerealesResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-arrow-right-start-on-rectangle';
     protected static ?string $navigationGroup = 'Paihuen'; // Agrupa en "Barlovento"
     protected static ?string $navigationLabel = 'Ingresos Insumos'; // Nombre del 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -38,24 +39,21 @@ class PaihuenCerealesResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('cereal')
                             ->label('Insumo')
-                            ->options([
-                                'Maiz' => 'Maiz',
-                                'Soja' => 'Soja',
-                                'Cascara de mani' => 'Cascara de Mani',
-                                'Piedras' => 'Piedras',
-                                'Urea' => 'Urea',
-                                'Harina de Soja' => 'Harina de Soja',
-                                ])
+                            ->options(\App\Models\Insumos::pluck('insumo', 'insumo')->toArray())
                             ->default('Maiz')
                             ->required()
                             ->reactive()
                             ->id('cereal')
                             ->searchable() // Permite buscar o escribir valores personalizados
                             ->createOptionForm([
-                                Forms\Components\TextInput::make('otroIngreso')
-                                ->label('Otro Ingreso')
+                                Forms\Components\TextInput::make('insumo')
+                                ->label('Nuevo Insumo')
                                 ->required(),
-                            ]),
+                            ])
+                            ->createOptionUsing(function (array $data): int {
+                                $insumo = Insumos::create(['insumo' => $data['insumo']]);
+                                return $insumo->id;
+                            }),
                         Forms\Components\DatePicker::make('fecha')
                             ->label('Fecha')
                             ->required(),
