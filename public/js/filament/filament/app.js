@@ -470,14 +470,16 @@ if(getUrlAfterAdmin() === 'barlovento-egresos/create' || (getUrlAfterAdmin().spl
 //                          CREATE CEREALES       
 //                                   ************************/
 
-if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() === 'paihuen-cereales/create') {
+if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() === 'paihuen-cereales/create' || getUrlAfterAdmin() === 'paihuen-egreso-cereales/create') {
 
     let pesoBruto = document.getElementById('pesoBruto')
     let tara = document.getElementById('pesoTara')
 
     pesoBruto.addEventListener('change', function() {
         let resultado = Number(pesoBruto.value) - Number(tara.value);
-            document.getElementById('pesoNeto').value = resultado;
+        document.getElementById('pesoNeto').value = resultado;
+
+        if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() === 'paihuen-cereales/create')
             getMermaHumedad()
 
 
@@ -487,19 +489,23 @@ if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() ===
 
         let resultado = Number(pesoBruto.value) - Number(tara.value);
         document.getElementById('pesoNeto').value = resultado;
-        getMermaHumedad()
+
+        if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() === 'paihuen-cereales/create')
+            getMermaHumedad()
 
 
     })
 
-    const fields = ['humedad', 'mermaMaterias', 'mermaTierra', 'mermaOlor'];
-    fields.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener('change', getMermaHumedad);
-        }
-    });
+    if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() === 'paihuen-cereales/create') {
 
+        const fields = ['humedad', 'mermaMaterias', 'mermaTierra', 'mermaOlor'];
+        fields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('change', getMermaHumedad);
+            }
+        });
+    }
 }
 
 
@@ -507,8 +513,7 @@ if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() ===
 //                          EDIT CEREALES       
 //                                   ************************/
 
-if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')[0] === 'barlovento-cereales' || getUrlAfterAdmin().split('/')[0] === 'paihuen-cereales')) {
-
+if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')[0] === 'barlovento-cereales' || getUrlAfterAdmin().split('/')[0] === 'paihuen-cereales' ||  getUrlAfterAdmin().split('/')[0]    === 'paihuen-egreso-cereales')) {
     
     let pesoBruto = document.getElementById('pesoBruto')
     let tara = document.getElementById('pesoTara')
@@ -519,7 +524,8 @@ if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')
 
         document.getElementById('pesoNeto').value = resultado;
 
-        getMermaHumedad()
+        if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() === 'paihuen-cereales/create')
+            getMermaHumedad()
 
     }, 1000);
 
@@ -536,23 +542,26 @@ if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')
 
     })
 
-
-    let humedad = document.getElementById('humedad')
-
-    humedad.addEventListener('change', function() {
-         
-            getMermaHumedad()
-
-    })
-
-    if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')[0] === 'paihuen-cereales')) {
-
-        setTimeout(() => {
-
-            let resultado = Number(pesoBruto.value) - Number(tara.value);
-            document.getElementById('pesoNeto').value = resultado;
+    if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() === 'paihuen-cereales/create'){
         
-        }, 1000);
+        let humedad = document.getElementById('humedad')
+
+        humedad.addEventListener('change', function() {
+            
+                getMermaHumedad()
+
+        })
+
+        if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')[0] === 'paihuen-cereales')) {
+
+            setTimeout(() => {
+
+                let resultado = Number(pesoBruto.value) - Number(tara.value);
+                document.getElementById('pesoNeto').value = resultado;
+            
+            }, 1000);
+            
+        }
     }
 
 }
