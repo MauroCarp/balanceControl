@@ -52,9 +52,9 @@ class PaihuenCerealesResource extends Resource
                                 ->label('Nuevo Insumo')
                                 ->required(),
                             ])
-                            ->createOptionUsing(function (array $data): int {
+                            ->createOptionUsing(function (array $data): string {
                                 $insumo = Insumos::create(['insumo' => $data['insumo']]);
-                                return $insumo->id;
+                                return $insumo->insumo;
                             }),
                         Forms\Components\DatePicker::make('fecha')
                             ->label('Fecha')
@@ -432,8 +432,8 @@ class PaihuenCerealesResource extends Resource
                         // Crear un nuevo Spreadsheet
                         $spreadsheet = new Spreadsheet();
                         $sheet = $spreadsheet->getActiveSheet();
-                        
-                        $sheet->setCellValue('A1' , $filtro);
+                        $sheet->mergeCells('A1:F1');
+                        $sheet->setCellValue('A1' , ($filtro == '') ? 'Reporte de Ingreso de Insumos Paihuen' : 'Reporte de Ingreso de Insumos Paihuen - ' . $filtro);
 
                         // Encabezados
                         $headers = [
@@ -517,7 +517,7 @@ class PaihuenCerealesResource extends Resource
                         }
 
                         // Guardar en memoria y devolver como descarga
-                        $filename = 'Reporte_Ingreso_Insumos_' . now()->format('Ymd_His') . '.xlsx';
+                        $filename = 'Reporte_Ingreso_Insumos_Paihuen' . now()->format('Ymd_His') . '.xlsx';
                         $tempFile = tempnam(sys_get_temp_dir(), $filename);
                         $writer = new Xlsx($spreadsheet);
                         $writer->save($tempFile);

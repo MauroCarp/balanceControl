@@ -13,9 +13,15 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Infolists\Components\Grid as GridInfolist;
-use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\Section as InfolistSection;
 use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Split;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\Grid as GridInfolist;
+use Filament\Infolists\Components\Group;
+use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class PaihuenEgresoCerealesResource extends Resource
 {
@@ -118,7 +124,98 @@ class PaihuenEgresoCerealesResource extends Resource
             ->defaultSort('fecha', 'desc') // Ordenar por la columna 'nombre' de forma ascendente
 
             ->filters([
-                //
+               Tables\Filters\Filter::make('fecha')
+                    ->form([
+                        Forms\Components\DatePicker::make('fecha_desde')->label('Desde'),
+                        Forms\Components\DatePicker::make('fecha_hasta')->label('Hasta'),
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        return $query
+                            ->when($data['fecha_desde'], fn ($q) => $q->whereDate('fecha', '>=', $data['fecha_desde']))
+                            ->when($data['fecha_hasta'], fn ($q) => $q->whereDate('fecha', '<=', $data['fecha_hasta']));
+                    }),
+
+                Tables\Filters\SelectFilter::make('cereal')
+                    ->label('Insumo')
+                            ->options(\App\Models\Insumos::pluck('insumo', 'insumo')->toArray())
+
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('download_filtered_pdf')
+                    ->label('Reporte Filtrado')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->action(function (Tables\Actions\Action $action) {
+                        // Obtener los filtros seleccionados
+                        $filters = $action->getTable()->getFilters();
+                 
+                        // Construir la consulta base
+                        $query = \App\Models\PaihuenCereales::query();
+
+                                $filtro = '';
+                        // Aplicar filtros manualmente según los valores seleccionados
+                        if (!empty($filters['fecha']->getState()[0])) {
+                            $query->whereDate('fecha', '>=', $filters['fecha']->getState()[0]);
+                            $filtro .= 'Desde: '. $filters['fecha']->getState()[0];
+                        }
+                        if (!empty($filters['fecha']->getState()[1])) {
+                            $query->whereDate('fecha', '<=', $filters['fecha']->getState()[1]);
+                            $filtro .= ' - Hasta: '. $filters['fecha']->getState()[1];
+
+                        }
+
+                        if (!empty($filters['cereal']->getState()['value'])) {
+                            $query->where('cereal', $filters['cereal']->getState()['value']);
+                            $filtro .= 'Insumo: '. $filters['cereal']->getState()['value'];
+
+                        }
+                        
+                        $query->orderBy('fecha', 'desc');
+
+                        // Obtener los registros filtrados
+                        $records = $query->get();
+
+                        // Crear un nuevo Spreadsheet
+                        $spreadsheet = new Spreadsheet();
+                        $sheet = $spreadsheet->getActiveSheet();
+                        $sheet->mergeCells('A1:F1');
+                            
+                        $sheet->setCellValue('A1' , ($filtro == '') ? 'Reporte de Egreso de Insumos Paihuen' : 'Reporte de Egreso de Insumos Paihuen - ' . $filtro);
+
+                        // Encabezados
+                        $headers = [
+                            'Fecha',
+                            'Insumo',
+                            'Carta de Porte',
+                            'Observaciones',
+                            'Peso Bruto',
+                            'Tara',
+                            'Peso Neto',
+                        ];
+                        $sheet->fromArray($headers, null, 'A2');
+
+                        // Datos
+                        $row = 3;
+                        foreach ($records as $record) {
+                            $sheet->setCellValue('A' . $row, \Carbon\Carbon::parse($record->fecha)->format('d-m-Y'));
+                            $sheet->setCellValue('B' . $row, $record->cereal);
+                            $sheet->setCellValue('C' . $row, $record->cartaPorte);
+                            $sheet->setCellValue('D' . $row, $record->observaciones);
+                            $sheet->setCellValue('E' . $row, $record->pesoBruto);
+                            $sheet->setCellValue('F' . $row, $record->pesoTara);
+                            $sheet->setCellValue('G' . $row, $record->pesoBruto - $record->pesoTara);
+                            $row++;
+                        }
+
+                        // Guardar en memoria y devolver como descarga
+                        $filename = 'Reporte_Egreso_Insumos_Paihuen' . now()->format('Ymd_His') . '.xlsx';
+                        $tempFile = tempnam(sys_get_temp_dir(), $filename);
+                        $writer = new Xlsx($spreadsheet);
+                        $writer->save($tempFile);
+
+                        return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
+                  
+                    }),
+                Tables\Actions\CreateAction::make()->label('Nuevo Registro'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()

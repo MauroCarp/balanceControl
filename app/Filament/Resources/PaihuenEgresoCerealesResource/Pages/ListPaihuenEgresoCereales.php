@@ -13,14 +13,12 @@ class ListPaihuenEgresoCereales extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-            ->label('Nuevo Egreso de Insumo'), // Cambia este texto al deseado
         ];
     }
 
     public function getTitle(): string
     {
-        return 'Egresos de Insumo'; // Cambia este texto al título deseado
+        return ' '; // Cambia este texto al título deseado
 
     }
 

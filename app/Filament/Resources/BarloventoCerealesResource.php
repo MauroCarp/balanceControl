@@ -20,6 +20,8 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\Grid as GridInfolist;
 use Filament\Infolists\Components\Group;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class BarloventoCerealesResource extends Resource
 {
@@ -232,7 +234,7 @@ class BarloventoCerealesResource extends Resource
                         TextEntry::make('mermaManipuleo')
                             ->size('lg')
                             ->weight('bold')
-                            ->label('% Merma de Humedad')
+                            ->label('% Manipuleo')
                             ->getStateUsing(function ($record) {
 
                                $mermaManipuleo = [
@@ -376,7 +378,154 @@ class BarloventoCerealesResource extends Resource
             ->defaultSort('fecha', 'desc') // Ordenar por la columna 'nombre' de forma ascendente
 
             ->filters([
-                //
+                
+               Tables\Filters\Filter::make('fecha')
+                    ->form([
+                        Forms\Components\DatePicker::make('fecha_desde')->label('Desde'),
+                        Forms\Components\DatePicker::make('fecha_hasta')->label('Hasta'),
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        return $query
+                            ->when($data['fecha_desde'], fn ($q) => $q->whereDate('fecha', '>=', $data['fecha_desde']))
+                            ->when($data['fecha_hasta'], fn ($q) => $q->whereDate('fecha', '<=', $data['fecha_hasta']));
+                    }),
+
+                Tables\Filters\SelectFilter::make('cereal')
+                    ->label('Insumo')
+                            ->options(\App\Models\Insumos::pluck('insumo', 'insumo')->toArray())
+
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('download_filtered_pdf')
+                    ->label('Reporte Filtrado')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->action(function (Tables\Actions\Action $action) {
+                        // Obtener los filtros seleccionados
+                        $filters = $action->getTable()->getFilters();
+                        // Construir la consulta base
+                        $query = \App\Models\BarloventoCereales::query();
+
+                                $filtro = '';
+                        // Aplicar filtros manualmente según los valores seleccionados
+                        if (!empty($filters['fecha']->getState()['fecha_desde'])) {
+
+                            $query->whereDate('fecha', '>=', $filters['fecha']->getState()['fecha_desde']);
+                            $filtro .= 'Desde: '. $filters['fecha']->getState()['fecha_desde'];
+                        }
+                        if (!empty($filters['fecha']->getState()['fecha_hasta'])) {
+                            $query->whereDate('fecha', '<=', $filters['fecha']->getState()['fecha_hasta']);
+                            $filtro .= ' - Hasta: '. $filters['fecha']->getState()['fecha_hasta'];
+
+                        }
+
+                        if (!empty($filters['cereal']->getState()['value'])) {
+                            $query->where('cereal', $filters['cereal']->getState()['value']);
+                            $filtro .= 'Insumo: '. $filters['cereal']->getState()['value'];
+
+                        }
+
+                        $query->orderBy('fecha', 'desc');
+
+                        // Obtener los registros filtrados
+                        $records = $query->get();
+
+                        // Crear un nuevo Spreadsheet
+                        $spreadsheet = new Spreadsheet();
+                        $sheet = $spreadsheet->getActiveSheet();
+                        $sheet->mergeCells('A1:F1');
+                        $sheet->setCellValue('A1' , ($filtro == '') ? 'Reporte de Ingreso de Insumos Paihuen' : 'Reporte de Ingreso de Insumos Paihuen - ' . $filtro);
+
+                        // Encabezados
+                        $headers = [
+                            'Fecha',
+                            'Insumo',
+                            'Carta de Porte',
+                            'Vendedor',
+                            'Peso Bruto',
+                            'Tara',
+                            'Peso Neto',
+                            '% Humedad',
+                            '% Merma de Humedad',
+                            '% Manipuleo',
+                            'Calidad',
+                            'Materias Extrañas',
+                            'Contiene Tierra',
+                            'Olor',
+                            'Peso Neto por Mermas',
+                            'Granos Dañados',
+                            'Granos Quebrados',
+                            'Destino',
+                            'Observaciones'
+                        ];
+                        $sheet->fromArray($headers, null, 'A2');
+
+                        // Datos
+                        $row = 3;
+                        foreach ($records as $record) {
+                            $sheet->setCellValue('A' . $row, \Carbon\Carbon::parse($record->fecha)->format('d-m-Y'));
+                            $sheet->setCellValue('B' . $row, $record->cereal);
+                            $sheet->setCellValue('C' . $row, $record->cartaPorte);
+                            $sheet->setCellValue('D' . $row, $record->vendedor);
+                            $sheet->setCellValue('E' . $row, $record->pesoBruto);
+                            $sheet->setCellValue('F' . $row, $record->pesoTara);
+                            $sheet->setCellValue('G' . $row, $record->pesoBruto - $record->pesoTara);
+                            $sheet->setCellValue('H' . $row, $record->humedad);
+
+                             $manipuleo = [
+                                    "Maiz"=>0.25,
+                                    "Sorgo"=>0.25,   
+                                    "Trigo"=>0.10,
+                                    "Cebada"=>0.20,
+                                    "Avena"=>0.20,
+                                    "Soja"=>0.25,
+                                    "Girasol"=>0.20,
+                                    "Centeno"=>0.20,
+                                    "Triticale"=>0.5,
+                                    "Arroz"=>0.13,
+                                    "Mijo"=>0.25];
+
+                                    
+                            $mermaHumedad = DB::table('merma_humedad')
+                            ->where('cereal', $record->cereal)
+                            ->where('humedad', $record->humedad)
+                            ->value('merma');
+
+                            
+                            
+                            $sheet->setCellValue('I' . $row, $mermaHumedad);
+                            $sheet->setCellValue('J' . $row, $manipuleo[$record->cereal]);
+                            $sheet->setCellValue('K' . $row, $record->calidad);
+                            $sheet->setCellValue('L' . $row, $record->materiasExtranas);
+                            $sheet->setCellValue('M' . $row, $record->tierra);
+                            $sheet->setCellValue('N' . $row, $record->olor);
+
+                            $mermaManipuleo = $manipuleo[$record->cereal];
+
+                            $pesoNeto = $record->pesoBruto - $record->pesoTara;
+                            $mermaMaterias = ($record->materiasExtranas > 1.5) ? $record->materiasExtranas - 1.5 : 0;
+                            $merma = $mermaHumedad + $mermaManipuleo + $mermaMaterias + $record->tierra + $record->olor;
+                            $pesoNetoMermas = ($pesoNeto - ($pesoNeto * ($merma / 100)));
+
+
+
+                            $sheet->setCellValue('O' . $row, number_format($pesoNetoMermas, 0, ',', '.'));
+                            $sheet->setCellValue('P' . $row, ($record->granosRotos ? 'Sí' : 'No'));
+                            $sheet->setCellValue('Q' . $row, ($record->granosQuebrados ? 'Sí' : 'No'));
+                            $sheet->setCellValue('R' . $row, $record->destino === 'siloBolsa' ? 'Silo Bolsa' : ($record->destino === 'plantaSilo' ? 'Planta de Silo' : $record->destino));
+                            $sheet->setCellValue('S' . $row, $record->observaciones);
+                            $row++;
+                        }
+
+                        // Guardar en memoria y devolver como descarga
+                        $filename = 'Reporte_Ingreso_Insumos_Barlovento' . now()->format('Ymd_His') . '.xlsx';
+                        $tempFile = tempnam(sys_get_temp_dir(), $filename);
+                        $writer = new Xlsx($spreadsheet);
+                        $writer->save($tempFile);
+
+                        return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
+                  
+                    }),
+                Tables\Actions\CreateAction::make()->label('Nuevo Registro'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
