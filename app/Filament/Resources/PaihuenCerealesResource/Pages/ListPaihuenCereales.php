@@ -13,14 +13,12 @@ class ListPaihuenCereales extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-            ->label('Nuevo Ingreso de Insumo'), // Cambia este texto al deseado
         ];
     }
 
     public function getTitle(): string
     {
-        return 'Ingresos de Insumo'; // Cambia este texto al título deseado
+        return ' '; // Cambia este texto al título deseado
 
     }
 

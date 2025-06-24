@@ -15,6 +15,7 @@
         "laravel/sanctum": "^3.2",
         "laravel/tinker": "^2.8",
         "livewire/livewire": "^3.5",
+        "phpoffice/phpspreadsheet": "^4.4",
         "spatie/laravel-medialibrary": "^11.6"
     },
     "require-dev": {
