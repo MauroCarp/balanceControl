@@ -147,19 +147,19 @@ class PaihuenEgresoCerealesResource extends Resource
                     ->action(function (Tables\Actions\Action $action) {
                         // Obtener los filtros seleccionados
                         $filters = $action->getTable()->getFilters();
-                 
+                        
                         // Construir la consulta base
-                        $query = \App\Models\PaihuenCereales::query();
+                        $query = \App\Models\PaihuenEgresoCereales::query();
 
                                 $filtro = '';
                         // Aplicar filtros manualmente según los valores seleccionados
-                        if (!empty($filters['fecha']->getState()[0])) {
-                            $query->whereDate('fecha', '>=', $filters['fecha']->getState()[0]);
-                            $filtro .= 'Desde: '. $filters['fecha']->getState()[0];
+                        if (!empty($filters['fecha']->getState()['fecha_desde'])) {
+                            $query->whereDate('fecha', '>=', $filters['fecha']->getState()['fecha_desde']);
+                            $filtro .= 'Desde: '. $filters['fecha']->getState()['fecha_desde'];
                         }
-                        if (!empty($filters['fecha']->getState()[1])) {
-                            $query->whereDate('fecha', '<=', $filters['fecha']->getState()[1]);
-                            $filtro .= ' - Hasta: '. $filters['fecha']->getState()[1];
+                        if (!empty($filters['fecha']->getState()['fecha_hasta'])) {
+                            $query->whereDate('fecha', '<=', $filters['fecha']->getState()['fecha_hasta']);
+                            $filtro .= ' - Hasta: '. $filters['fecha']->getState()['fecha_hasta'];
 
                         }
 

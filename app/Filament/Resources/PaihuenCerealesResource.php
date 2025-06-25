@@ -39,33 +39,38 @@ class PaihuenCerealesResource extends Resource
             ->schema([
                 Forms\Components\Grid::make(4)
                     ->schema([
-                        Forms\Components\Select::make('cereal')
-                            ->label('Insumo')
-                            ->options(\App\Models\Insumos::pluck('insumo', 'insumo')->toArray())
-                            ->default('Maiz')
-                            ->required()
-                            ->reactive()
-                            ->id('cereal')
-                            ->searchable() // Permite buscar o escribir valores personalizados
-                            ->createOptionForm([
-                                Forms\Components\TextInput::make('insumo')
-                                ->label('Nuevo Insumo')
-                                ->required(),
-                            ])
-                            ->createOptionUsing(function (array $data): string {
-                                $insumo = Insumos::create(['insumo' => $data['insumo']]);
-                                return $insumo->insumo;
-                            }),
-                        Forms\Components\DatePicker::make('fecha')
-                            ->label('Fecha')
-                            ->required(),
-                        Forms\Components\TextInput::make('cartaPorte')
-                            ->label('Carta de Porte')
-                            ->required()
-                            ->maxLength(191),
-                        Forms\Components\TextInput::make('vendedor')
-                            ->label('Vendedor')
-                            ->required(),
+                        Forms\Components\Grid::make(5)
+                            ->schema([
+                                Forms\Components\Select::make('cereal')
+                                    ->label('Insumo')
+                                    ->options(\App\Models\Insumos::pluck('insumo', 'insumo')->toArray())
+                                    ->default('Maiz')
+                                    ->required()
+                                    ->reactive()
+                                    ->id('cereal')
+                                    ->searchable() // Permite buscar o escribir valores personalizados
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('insumo')
+                                        ->label('Nuevo Insumo')
+                                        ->required(),
+                                    ])
+                                    ->createOptionUsing(function (array $data): string {
+                                        $insumo = Insumos::create(['insumo' => $data['insumo']]);
+                                        return $insumo->insumo;
+                                    }),
+                                Forms\Components\DatePicker::make('fecha')
+                                    ->label('Fecha')
+                                    ->required(),
+                                Forms\Components\TextInput::make('cartaPorte')
+                                    ->label('Carta de Porte')
+                                    ->required()
+                                    ->maxLength(191),
+                                Forms\Components\TextInput::make('vendedor')
+                                    ->label('Vendedor')
+                                    ->required(),
+                                Forms\Components\TextInput::make('corredor')
+                                    ->label('Corredor'),
+                        ]),
                         Forms\Components\Grid::make(3)
                             ->schema([
                                 Forms\Components\TextInput::make('pesoBruto')
@@ -174,25 +179,35 @@ class PaihuenCerealesResource extends Resource
         ->schema([
                 GridInfolist::make(4)
                     ->schema([
-                        TextEntry::make('cereal')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('Insumo')
-                            ->size('lg')
-                            ->weight('bold'),
-                        TextEntry::make('fecha')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('Fecha')
-                            ->date('d-m-Y'),
-                        TextEntry::make('cartaPorte')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('Carta de Porte'),
-                        TextEntry::make('vendedor')
-                            ->size('lg')
-                            ->weight('bold')
-                            ->label('Vendedor'),
+                        GridInfolist::make(5)
+                                ->schema([
+                                    TextEntry::make('cereal')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->label('Insumo')
+                                        ->size('lg')
+                                        ->weight('bold'),
+                                    TextEntry::make('fecha')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->label('Fecha')
+                                        ->date('d-m-Y'),
+                                    TextEntry::make('cartaPorte')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->label('Carta de Porte'),
+                                    TextEntry::make('vendedor')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->label('Vendedor'),
+                                    TextEntry::make('corredor')
+                                        ->size('lg')
+                                        ->weight('bold')
+                                        ->label('Corredor')
+                                        ->getStateUsing(function ($record) {
+                                            return ($record->corredor) ? $record->corredor : 'No especificado';
+                                        }),
+                                ]),
                         GridInfolist::make(3)
                                 ->schema([
                                     TextEntry::make('pesoBruto')
@@ -402,19 +417,19 @@ class PaihuenCerealesResource extends Resource
                     ->action(function (Tables\Actions\Action $action) {
                         // Obtener los filtros seleccionados
                         $filters = $action->getTable()->getFilters();
-                 
+
                         // Construir la consulta base
                         $query = \App\Models\PaihuenCereales::query();
 
                                 $filtro = '';
                         // Aplicar filtros manualmente según los valores seleccionados
-                        if (!empty($filters['fecha']->getState()[0])) {
-                            $query->whereDate('fecha', '>=', $filters['fecha']->getState()[0]);
-                            $filtro .= 'Desde: '. $filters['fecha']->getState()[0];
+                        if (!empty($filters['fecha']->getState()['fecha_desde'])) {
+                            $query->whereDate('fecha', '>=', $filters['fecha']->getState()['fecha_desde']);
+                            $filtro .= 'Desde: '. $filters['fecha']->getState()['fecha_desde'];
                         }
-                        if (!empty($filters['fecha']->getState()[1])) {
-                            $query->whereDate('fecha', '<=', $filters['fecha']->getState()[1]);
-                            $filtro .= ' - Hasta: '. $filters['fecha']->getState()[1];
+                        if (!empty($filters['fecha']->getState()['fecha_hasta'])) {
+                            $query->whereDate('fecha', '<=', $filters['fecha']->getState()['fecha_hasta']);
+                            $filtro .= ' - Hasta: '. $filters['fecha']->getState()['fecha_hasta'];
 
                         }
 
@@ -423,7 +438,7 @@ class PaihuenCerealesResource extends Resource
                             $filtro .= 'Insumo: '. $filters['cereal']->getState()['value'];
 
                         }
-                        
+
                         $query->orderBy('fecha', 'desc');
 
                         // Obtener los registros filtrados
@@ -432,7 +447,7 @@ class PaihuenCerealesResource extends Resource
                         // Crear un nuevo Spreadsheet
                         $spreadsheet = new Spreadsheet();
                         $sheet = $spreadsheet->getActiveSheet();
-                        $sheet->mergeCells('A1:F1');
+                        $sheet->mergeCells('A1:I1');
                         $sheet->setCellValue('A1' , ($filtro == '') ? 'Reporte de Ingreso de Insumos Paihuen' : 'Reporte de Ingreso de Insumos Paihuen - ' . $filtro);
 
                         // Encabezados
@@ -441,6 +456,7 @@ class PaihuenCerealesResource extends Resource
                             'Insumo',
                             'Carta de Porte',
                             'Vendedor',
+                            'Corredor',
                             'Peso Bruto',
                             'Tara',
                             'Peso Neto',
@@ -466,10 +482,11 @@ class PaihuenCerealesResource extends Resource
                             $sheet->setCellValue('B' . $row, $record->cereal);
                             $sheet->setCellValue('C' . $row, $record->cartaPorte);
                             $sheet->setCellValue('D' . $row, $record->vendedor);
-                            $sheet->setCellValue('E' . $row, $record->pesoBruto);
-                            $sheet->setCellValue('F' . $row, $record->pesoTara);
-                            $sheet->setCellValue('G' . $row, $record->pesoBruto - $record->pesoTara);
-                            $sheet->setCellValue('H' . $row, $record->humedad);
+                            $sheet->setCellValue('E' . $row, (!is_null($record->corredor)) ? $record->corredor : 'No especificado');
+                            $sheet->setCellValue('F' . $row, $record->pesoBruto);
+                            $sheet->setCellValue('G' . $row, $record->pesoTara);
+                            $sheet->setCellValue('H' . $row, $record->pesoBruto - $record->pesoTara);
+                            $sheet->setCellValue('I' . $row, $record->humedad);
 
                              $manipuleo = [
                                     "Maiz"=>0.25,
@@ -492,12 +509,12 @@ class PaihuenCerealesResource extends Resource
 
                             
                             
-                            $sheet->setCellValue('I' . $row, $mermaHumedad);
-                            $sheet->setCellValue('J' . $row, $manipuleo[$record->cereal]);
-                            $sheet->setCellValue('K' . $row, $record->calidad);
-                            $sheet->setCellValue('L' . $row, $record->materiasExtranas);
-                            $sheet->setCellValue('M' . $row, $record->tierra);
-                            $sheet->setCellValue('N' . $row, $record->olor);
+                            $sheet->setCellValue('J' . $row, $mermaHumedad);
+                            $sheet->setCellValue('K' . $row, $manipuleo[$record->cereal]);
+                            $sheet->setCellValue('L' . $row, $record->calidad);
+                            $sheet->setCellValue('M' . $row, $record->materiasExtranas);
+                            $sheet->setCellValue('N' . $row, $record->tierra);
+                            $sheet->setCellValue('O' . $row, $record->olor);
 
                             $mermaManipuleo = $manipuleo[$record->cereal];
 
@@ -508,11 +525,11 @@ class PaihuenCerealesResource extends Resource
 
 
 
-                            $sheet->setCellValue('O' . $row, number_format($pesoNetoMermas, 0, ',', '.'));
-                            $sheet->setCellValue('P' . $row, ($record->granosRotos ? 'Sí' : 'No'));
-                            $sheet->setCellValue('Q' . $row, ($record->granosQuebrados ? 'Sí' : 'No'));
-                            $sheet->setCellValue('R' . $row, $record->destino === 'siloBolsa' ? 'Silo Bolsa' : ($record->destino === 'plantaSilo' ? 'Planta de Silo' : $record->destino));
-                            $sheet->setCellValue('S' . $row, $record->observaciones);
+                            $sheet->setCellValue('P' . $row, number_format($pesoNetoMermas, 0, ',', '.'));
+                            $sheet->setCellValue('Q' . $row, ($record->granosRotos ? 'Sí' : 'No'));
+                            $sheet->setCellValue('R' . $row, ($record->granosQuebrados ? 'Sí' : 'No'));
+                            $sheet->setCellValue('S' . $row, $record->destino === 'siloBolsa' ? 'Silo Bolsa' : ($record->destino === 'plantaSilo' ? 'Planta de Silo' : $record->destino));
+                            $sheet->setCellValue('T' . $row, $record->observaciones);
                             $row++;
                         }
 
