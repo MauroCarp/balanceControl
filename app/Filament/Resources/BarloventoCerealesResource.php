@@ -171,8 +171,6 @@ class BarloventoCerealesResource extends Resource
                                     ]),
                         Forms\Components\Checkbox::make('confirmado')
                             ->label(fn () => new HtmlString('<span style="box-shadow:2px 2px grey;padding:2px;border-radius:5px;border:2px solid rgb(55, 175, 81);font-size:1.5em;color: green;weight:bolder">Confirmar</span>'))
-                            
-                            ->hidden(fn (string $context) => $context === 'create'),
                     ]),
                 ]);
     }
@@ -425,7 +423,106 @@ class BarloventoCerealesResource extends Resource
             ])
             ->headerActions([
                 Tables\Actions\Action::make('download_filtered_pdf')
-                    ->label('Reporte Filtrado')
+                    ->label('Reporte PDF Filtrado')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->action(function (Tables\Actions\Action $action) {
+                        $filters = $action->getTable()->getFilters();
+                        $query = \App\Models\BarloventoCereales::query();
+                        $filtro = '';
+                        if (!empty($filters['fecha']->getState()['fecha_desde'])) {
+                            $query->whereDate('fecha', '>=', $filters['fecha']->getState()['fecha_desde']);
+                            $filtro .= 'Desde: '. $filters['fecha']->getState()['fecha_desde'];
+                        }
+                        if (!empty($filters['fecha']->getState()['fecha_hasta'])) {
+                            $query->whereDate('fecha', '<=', $filters['fecha']->getState()['fecha_hasta']);
+                            $filtro .= ' - Hasta: '. $filters['fecha']->getState()['fecha_hasta'];
+                        }
+                        if (!empty($filters['cereal']->getState()['value'])) {
+                            $query->where('cereal', $filters['cereal']->getState()['value']);
+                            $filtro .= ' Insumo: '. $filters['cereal']->getState()['value'];
+                        }
+                        $query->orderBy('fecha', 'desc');
+                        $records = $query->get();
+
+                        // Construir HTML para el PDF
+                            $html = '<table width="100%">
+                                <tr>    
+                                    <td style="width="30%" style="text-align:left;">
+                                        <img src="images/barlovento-logo.png"/>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <h2 style="text-align:center;">' . (($filtro == '') ? 'Reporte de Ingreso de Insumos Barlovento' : 'Reporte de Ingreso de Insumos Barlovento - ' . $filtro) . '</h2>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        ' . date('d-m-Y') . '
+                                    </td>
+                                </tr></table>';
+                        $html .= '<table border="1" cellpadding="4" cellspacing="0" width="100%" style="font-size:12px;"><thead><tr>';
+                        $headers = [
+                            'Fecha', 'Insumo', 'C. Porte', 'Vendedor', 'Corredor', 'P.B', 'Tara', 'P.N',
+                            '% Humedad', '% Merma', '% Manipuleo', 'Calidad', 'Materias Extrañas', 'Contiene Tierra',
+                            'Olor', 'P.N por Mermas', 'Granos Dañados', 'Granos Quebrados', 'Destino', 'Observaciones'
+                        ];
+                        foreach ($headers as $header) {
+                            $html .= '<th style="background:#eee;">' . $header . '</th>';
+                        }
+                        $html .= '</tr></thead><tbody>';
+
+                        $manipuleo = [
+                            "Maiz"=>0.25, "Sorgo"=>0.25, "Trigo"=>0.10, "Cebada"=>0.20, "Avena"=>0.20,
+                            "Soja"=>0.25, "Girasol"=>0.20, "Centeno"=>0.20, "Triticale"=>0.5, "Arroz"=>0.13, "Mijo"=>0.25
+                        ];
+
+                        foreach ($records as $record) {
+                            $mermaHumedad = DB::table('merma_humedad')
+                                ->where('cereal', $record->cereal)
+                                ->where('humedad', $record->humedad)
+                                ->value('merma');
+                            $mermaManipuleo = $manipuleo[$record->cereal] ?? 0;
+                            $pesoNeto = $record->pesoBruto - $record->pesoTara;
+                            $mermaMaterias = ($record->materiasExtranas > 1.5) ? $record->materiasExtranas - 1.5 : 0;
+                            $merma = $mermaHumedad + $mermaManipuleo + $mermaMaterias + $record->tierra + $record->olor;
+                            $pesoNetoMermas = ($pesoNeto - ($pesoNeto * ($merma / 100)));
+
+                            $html .= '<tr>';
+                            $html .= '<td>' . \Carbon\Carbon::parse($record->fecha)->format('d M Y') . '</td>';
+                            $html .= '<td>' . $record->cereal . '</td>';
+                            $html .= '<td>' . $record->cartaPorte . '</td>';
+                            $html .= '<td>' . $record->vendedor . '</td>';
+                            $html .= '<td>' . (!is_null($record->corredor) ? $record->corredor : 'No especificado') . '</td>';
+                            $html .= '<td>' . number_format($record->pesoBruto, 0, ',', '.') . '</td>';
+                            $html .= '<td>' . number_format($record->pesoTara, 0, ',', '.') . '</td>';
+                            $html .= '<td>' . number_format($pesoNeto, 0, ',', '.') . '</td>';
+                            $html .= '<td style="text-align:center">' . $record->humedad . '</td>';
+                            $html .= '<td style="text-align:center">' . $mermaHumedad . '</td>';
+                            $html .= '<td style="text-align:center">' . $mermaManipuleo . '</td>';
+                            $html .= '<td style="text-align:center">' . $record->calidad . '</td>';
+                            $html .= '<td style="text-align:center">' . $record->materiasExtranas . '</td>';
+                            $html .= '<td style="text-align:center">' . $record->tierra . '</td>';
+                            $html .= '<td style="text-align:center">' . $record->olor . '</td>';
+                            $html .= '<td>' . number_format($pesoNetoMermas, 0, ',', '.') . '</td>';
+                            $html .= '<td>' . ($record->granosRotos ? 'Sí' : 'No') . '</td>';
+                            $html .= '<td>' . ($record->granosQuebrados ? 'Sí' : 'No') . '</td>';
+                            $html .= '<td>' . ($record->destino === 'siloBolsa' ? 'Silo Bolsa' : ($record->destino === 'plantaSilo' ? 'Planta de Silo' : $record->destino)) . '</td>';
+                            $html .= '<td>' . $record->observaciones . '</td>';
+                            $html .= '</tr>';
+                        }
+                        $html .= '</tbody></table>';
+
+                        // Generar PDF usando Dompdf
+                        $pdf = app('dompdf.wrapper');
+                        $pdf->loadHTML($html)->setPaper('A4', 'landscape');
+                        $filename = 'Reporte_Ingreso_Insumos_Paihuen_' . now()->format('Ymd_His') . '.pdf';
+                        // return response($pdf->output(), 200)
+                        //     ->header('Content-Type', 'application/pdf')
+                        //     ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
+                        return response()->streamDownload(function () use ($pdf) {
+                        echo $pdf->stream();
+                        }, $filename);
+                    }),
+
+                Tables\Actions\Action::make('download_filtered_excel')
+                    ->label('Reporte Excel Filtrado')
                     ->icon('heroicon-o-document-arrow-down')
                     ->action(function (Tables\Actions\Action $action) {
                         // Obtener los filtros seleccionados
@@ -434,7 +531,7 @@ class BarloventoCerealesResource extends Resource
                         // Construir la consulta base
                         $query = \App\Models\BarloventoCereales::query();
 
-                                $filtro = '';
+                        $filtro = '';
                         // Aplicar filtros manualmente según los valores seleccionados
                         if (!empty($filters['fecha']->getState()['fecha_desde'])) {
                             $query->whereDate('fecha', '>=', $filters['fecha']->getState()['fecha_desde']);

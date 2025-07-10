@@ -172,8 +172,6 @@ class PaihuenCerealesResource extends Resource
                                     ]),
                         Forms\Components\Checkbox::make('confirmado')
                         ->label(fn () => new HtmlString('<span style="box-shadow:2px 2px grey;padding:2px;border-radius:5px;border:2px solid rgb(55, 175, 81);font-size:1.5em;color: green;weight:bolder">Confirmar</span>'))
-                        
-                        ->hidden(fn (string $context) => $context === 'create'),
                     ])
             ]);
     }
