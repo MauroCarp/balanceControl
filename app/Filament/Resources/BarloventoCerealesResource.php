@@ -20,6 +20,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\Grid as GridInfolist;
 use Filament\Infolists\Components\Group;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -167,9 +168,13 @@ class BarloventoCerealesResource extends Resource
                                         ->label('Observaciones')
                                         ->maxLength(400)
                                         ->rows(3),
-                                ])  
-                    ])
-            ]);
+                                    ]),
+                        Forms\Components\Checkbox::make('confirmado')
+                            ->label(fn () => new HtmlString('<span style="box-shadow:2px 2px grey;padding:2px;border-radius:5px;border:2px solid rgb(55, 175, 81);font-size:1.5em;color: green;weight:bolder">Confirmar</span>'))
+                            
+                            ->hidden(fn (string $context) => $context === 'create'),
+                    ]),
+                ]);
     }
 
     public static function infolist(Infolist $infolist): Infolist
@@ -389,6 +394,15 @@ class BarloventoCerealesResource extends Resource
                     ->formatStateUsing(function ($state) {
                         return $state === 'siloBolsa' ? 'Silo Bolsa' : ($state === 'plantaSilo' ? 'Planta de Silo' : $state);
                     }),
+                Tables\Columns\TextColumn::make('confirmado')
+                    ->label('Confirmado')
+                    ->sortable()
+                    ->formatStateUsing(function ($state) {
+                        return $state
+                            ? '<span style="color:green;font-size:1.5em;">&#10003;</span>'
+                            : '';
+                    })
+                    ->html(), // Permite renderizar HTML en la columna
             ])
             ->defaultSort('fecha', 'desc') // Ordenar por la columna 'nombre' de forma ascendente
 
