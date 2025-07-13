@@ -168,7 +168,6 @@ class BarloventoEgresosResource extends Resource
                                     ->id('pesoTara'),
                                 Forms\Components\TextInput::make('pesoNeto')
                                     ->label('Peso Neto')
-                                    ->required()
                                     ->default(0)
                                     ->maxLength(191)
                                     ->disabled()
