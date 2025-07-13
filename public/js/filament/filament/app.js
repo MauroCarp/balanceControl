@@ -146,46 +146,69 @@ let getMermaHumedad = () => {
 
     let cereal = document.getElementById('cereal').value;
 
-    fetch('/merma-humedad', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            cereal: cereal,
-            humedad: Number(document.getElementById('humedad').value)
+    let humedad = Number(document.getElementById('humedad').value)
+
+    let mermaOlor = document.getElementById('mermaOlor').value; 
+
+    let mermaTierra = document.getElementById('mermaTierra').value; 
+
+    let mermaMaterias = document.getElementById('mermaMaterias').value;
+    mermaMaterias = (mermaMaterias > 1.5) ? mermaMaterias - 1.5 : 0
+
+    if(humedad > 14.5){
+
+        fetch('/merma-humedad', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                cereal: cereal,
+                humedad: humedad
+            })
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.merma !== undefined) {
+        .then(response => response.json())
+        .then(data => {
 
-            let mermaOlor = document.getElementById('mermaOlor').value; 
+            if (data.merma !== undefined) {
 
-            let mermaMaterias = document.getElementById('mermaMaterias').value;
-            mermaMaterias = (mermaMaterias > 1.5) ? mermaMaterias - 1.5 : 0
+                let merma = Number(data.merma) + mermaManipuleo[cereal] + Number(mermaOlor) + Number(mermaMaterias) + Number(mermaTierra);
+    
+                document.getElementById('mermaHumedad').value = data.merma;
+    
+                document.getElementById('mermaManipuleo').value = mermaManipuleo[cereal];
+    
+                let pesoNeto = Number(document.getElementById('pesoNeto').value);
+    
+                let resultado = (pesoNeto - (pesoNeto * (merma / 100)));
+    
+                document.getElementById('pesoNetoHumedad').value = resultado;
 
-            let mermaTierra = document.getElementById('mermaTierra').value; 
+            } else {
+                console.error('No se encontró el valor de merma.');
+            }
+        })
+        .catch(error => {
+            console.error('Error al consultar la base de datos:', error);
+        });
 
-            let merma = Number(data.merma) + mermaManipuleo[cereal] + Number(mermaOlor) + Number(mermaMaterias) + Number(mermaTierra);
+    } else {
 
-            document.getElementById('mermaHumedad').value = data.merma;
+        let merma =  Number(mermaOlor) + Number(mermaMaterias) + Number(mermaTierra);
 
-            document.getElementById('mermaManipuleo').value = mermaManipuleo[cereal];
+        document.getElementById('mermaHumedad').value = 0;
+    
+        document.getElementById('mermaManipuleo').value = 0;
+        
+        let pesoNeto = Number(document.getElementById('pesoNeto').value);
 
-            let pesoNeto = Number(document.getElementById('pesoNeto').value);
+        let resultado = (pesoNeto - (pesoNeto * (merma / 100)));
+        console.log(pesoNeto,merma)
+        document.getElementById('pesoNetoHumedad').value = resultado;
 
-            let resultado = (pesoNeto - (pesoNeto * (merma / 100)));
 
-            document.getElementById('pesoNetoHumedad').value = resultado;
-        } else {
-            console.error('No se encontró el valor de merma.');
-        }
-    })
-    .catch(error => {
-        console.error('Error al consultar la base de datos:', error);
-    });
+    }
 
 }
 ///*********************     
@@ -524,7 +547,7 @@ if(getUrlAfterAdmin().split('/')[2] === 'edit' && (getUrlAfterAdmin().split('/')
 
         document.getElementById('pesoNeto').value = resultado;
 
-        if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() === 'paihuen-cereales/create')
+        // if(getUrlAfterAdmin() === 'barlovento-cereales/create' || getUrlAfterAdmin() === 'paihuen-cereales/create')
             getMermaHumedad()
 
     }, 1000);
