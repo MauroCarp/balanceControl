@@ -644,7 +644,7 @@ class BarloventoCerealesResource extends Resource
                         }
 
                         // Guardar en memoria y devolver como descarga
-                        $filename = 'Reporte_Ingreso_Insumos_Paihuen' . now()->format('Ymd_His') . '.xlsx';
+                        $filename = 'Reporte_Ingreso_Insumos_Barlovento' . now()->format('Ymd_His') . '.xlsx';
                         $tempFile = tempnam(sys_get_temp_dir(), $filename);
                         $writer = new Xlsx($spreadsheet);
                         $writer->save($tempFile);
