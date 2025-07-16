@@ -141,7 +141,7 @@ class PaihuenEgresoCerealesResource extends Resource
 
             ])
             ->headerActions([
-                                Tables\Actions\Action::make('download_filtered_pdf')
+                Tables\Actions\Action::make('download_filtered_pdf')
                     ->label('Reporte PDF Filtrado')
                     ->icon('heroicon-o-document-arrow-down')
                     ->action(function (Tables\Actions\Action $action) {
@@ -193,11 +193,21 @@ class PaihuenEgresoCerealesResource extends Resource
                         ];
 
                         foreach ($records as $record) {
-                            $mermaHumedad = DB::table('merma_humedad')
-                                ->where('cereal', $record->cereal)
-                                ->where('humedad', $record->humedad)
-                                ->value('merma');
-                            $mermaManipuleo = $manipuleo[$record->cereal] ?? 0;
+
+                            $mermaHumedad = 0;
+
+                            $mermaManipuleo = 0;
+
+                            if($record->humedad > 14.5) {
+
+                                $mermaHumedad = DB::table('merma_humedad')
+                                    ->where('cereal', $record->cereal)
+                                    ->where('humedad', $record->humedad)
+                                    ->value('merma');
+
+                                $mermaManipuleo = $manipuleo[$record->cereal] ?? 0;
+                            }
+
                             $pesoNeto = $record->pesoBruto - $record->pesoTara;
                             $mermaMaterias = ($record->materiasExtranas > 1.5) ? $record->materiasExtranas - 1.5 : 0;
                             $merma = $mermaHumedad + $mermaManipuleo + $mermaMaterias + $record->tierra + $record->olor;

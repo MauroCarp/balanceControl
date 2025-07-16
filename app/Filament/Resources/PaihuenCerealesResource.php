@@ -424,6 +424,114 @@ class PaihuenCerealesResource extends Resource
             ])
             ->headerActions([
                 Tables\Actions\Action::make('download_filtered_pdf')
+                    ->label('Reporte PDF Filtrado')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->action(function (Tables\Actions\Action $action) {
+                        $filters = $action->getTable()->getFilters();
+                        $query = \App\Models\BarloventoCereales::query();
+                        $filtro = '';
+                        if (!empty($filters['fecha']->getState()['fecha_desde'])) {
+                            $query->whereDate('fecha', '>=', $filters['fecha']->getState()['fecha_desde']);
+                            $filtro .= 'Desde: '. $filters['fecha']->getState()['fecha_desde'];
+                        }
+                        if (!empty($filters['fecha']->getState()['fecha_hasta'])) {
+                            $query->whereDate('fecha', '<=', $filters['fecha']->getState()['fecha_hasta']);
+                            $filtro .= ' - Hasta: '. $filters['fecha']->getState()['fecha_hasta'];
+                        }
+                        if (!empty($filters['cereal']->getState()['value'])) {
+                            $query->where('cereal', $filters['cereal']->getState()['value']);
+                            $filtro .= ' Insumo: '. $filters['cereal']->getState()['value'];
+                        }
+                        $query->orderBy('fecha', 'desc');
+                        $records = $query->get();
+
+                        // Construir HTML para el PDF
+                            $html = '<table width="100%">
+                                <tr>    
+                                    <td style="width="30%" style="text-align:left;">
+                                        <img src="images/barlovento-logo.png"/>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <h2 style="text-align:center;">' . (($filtro == '') ? 'Reporte de Ingreso de Insumos Paihuen' : 'Reporte de Ingreso de Insumos Paihuen - ' . $filtro) . '</h2>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        ' . date('d-m-Y') . '
+                                    </td>
+                                </tr></table>';
+                        $html .= '<table border="1" cellpadding="4" cellspacing="0" width="100%" style="font-size:12px;"><thead><tr>';
+                        $headers = [
+                            'Fecha', 'Insumo', 'C. Porte', 'Vendedor', 'Corredor', 'P.B', 'Tara', 'P.N',
+                            '% Humedad', '% Merma', '% Manipuleo', 'Calidad', 'Materias Extrañas', 'Contiene Tierra',
+                            'Olor', 'P.N por Mermas', 'Granos Dañados', 'Granos Quebrados', 'Destino', 'Observaciones'
+                        ];
+                        foreach ($headers as $header) {
+                            $html .= '<th style="background:#eee;">' . $header . '</th>';
+                        }
+                        $html .= '</tr></thead><tbody>';
+
+                        $manipuleo = [
+                            "Maiz"=>0.25, "Sorgo"=>0.25, "Trigo"=>0.10, "Cebada"=>0.20, "Avena"=>0.20,
+                            "Soja"=>0.25, "Girasol"=>0.20, "Centeno"=>0.20, "Triticale"=>0.5, "Arroz"=>0.13, "Mijo"=>0.25
+                        ];
+
+                        foreach ($records as $record) {
+                            
+                            $mermaHumedad = 0;
+
+                            $mermaManipuleo = 0;
+
+                            if($record->humedad > 14.5) {
+
+                                $mermaHumedad = DB::table('merma_humedad')
+                                    ->where('cereal', $record->cereal)
+                                    ->where('humedad', $record->humedad)
+                                    ->value('merma');
+
+                                $mermaManipuleo = $manipuleo[$record->cereal] ?? 0;
+                            }
+
+                            $pesoNeto = $record->pesoBruto - $record->pesoTara;
+                            $mermaMaterias = ($record->materiasExtranas > 1.5) ? $record->materiasExtranas - 1.5 : 0;
+                            $merma = $mermaHumedad + $mermaManipuleo + $mermaMaterias + $record->tierra + $record->olor;
+                            $pesoNetoMermas = ($pesoNeto - ($pesoNeto * ($merma / 100)));
+
+                            $html .= '<tr>';
+                            $html .= '<td>' . \Carbon\Carbon::parse($record->fecha)->format('d M Y') . '</td>';
+                            $html .= '<td>' . $record->cereal . '</td>';
+                            $html .= '<td>' . $record->cartaPorte . '</td>';
+                            $html .= '<td>' . $record->vendedor . '</td>';
+                            $html .= '<td>' . (!is_null($record->corredor) ? $record->corredor : 'No especificado') . '</td>';
+                            $html .= '<td>' . number_format($record->pesoBruto, 0, ',', '.') . '</td>';
+                            $html .= '<td>' . number_format($record->pesoTara, 0, ',', '.') . '</td>';
+                            $html .= '<td>' . number_format($pesoNeto, 0, ',', '.') . '</td>';
+                            $html .= '<td style="text-align:center">' . $record->humedad . '</td>';
+                            $html .= '<td style="text-align:center">' . $mermaHumedad . '</td>';
+                            $html .= '<td style="text-align:center">' . $mermaManipuleo . '</td>';
+                            $html .= '<td style="text-align:center">' . $record->calidad . '</td>';
+                            $html .= '<td style="text-align:center">' . $record->materiasExtranas . '</td>';
+                            $html .= '<td style="text-align:center">' . $record->tierra . '</td>';
+                            $html .= '<td style="text-align:center">' . $record->olor . '</td>';
+                            $html .= '<td>' . number_format($pesoNetoMermas, 0, ',', '.') . '</td>';
+                            $html .= '<td>' . ($record->granosRotos ? 'Sí' : 'No') . '</td>';
+                            $html .= '<td>' . ($record->granosQuebrados ? 'Sí' : 'No') . '</td>';
+                            $html .= '<td>' . ($record->destino === 'siloBolsa' ? 'Silo Bolsa' : ($record->destino === 'plantaSilo' ? 'Planta de Silo' : $record->destino)) . '</td>';
+                            $html .= '<td>' . $record->observaciones . '</td>';
+                            $html .= '</tr>';
+                        }
+                        $html .= '</tbody></table>';
+
+                        // Generar PDF usando Dompdf
+                        $pdf = app('dompdf.wrapper');
+                        $pdf->loadHTML($html)->setPaper('A4', 'landscape');
+                        $filename = 'Reporte_Ingreso_Insumos_Paihuen_' . now()->format('Ymd_His') . '.pdf';
+                        // return response($pdf->output(), 200)
+                        //     ->header('Content-Type', 'application/pdf')
+                        //     ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
+                        return response()->streamDownload(function () use ($pdf) {
+                        echo $pdf->stream();
+                        }, $filename);
+                    }),
+                Tables\Actions\Action::make('download_filtered_excel')
                     ->label('Reporte Filtrado')
                     ->icon('heroicon-o-document-arrow-down')
                     ->action(function (Tables\Actions\Action $action) {
@@ -513,13 +621,20 @@ class PaihuenCerealesResource extends Resource
                                     "Arroz"=>0.13,
                                     "Mijo"=>0.25];
 
-                                    
-                            $mermaHumedad = DB::table('merma_humedad')
-                            ->where('cereal', $record->cereal)
-                            ->where('humedad', $record->humedad)
-                            ->value('merma');
+                            $mermaHumedad = 0;
 
+                            $mermaManipuleo = 0;
+
+                            if($record->humedad > 14.5) {
                             
+                                $mermaHumedad = DB::table('merma_humedad')
+                                ->where('cereal', $record->cereal)
+                                ->where('humedad', $record->humedad)
+                                ->value('merma');
+                            
+                                $mermaManipuleo = $manipuleo[$record->cereal] ?? 0;
+                            }
+
                             
                             $sheet->setCellValue('J' . $row, $mermaHumedad);
                             $sheet->setCellValue('K' . $row, $manipuleo[$record->cereal]);
@@ -527,8 +642,6 @@ class PaihuenCerealesResource extends Resource
                             $sheet->setCellValue('M' . $row, $record->materiasExtranas);
                             $sheet->setCellValue('N' . $row, $record->tierra);
                             $sheet->setCellValue('O' . $row, $record->olor);
-
-                            $mermaManipuleo = $manipuleo[$record->cereal];
 
                             $pesoNeto = $record->pesoBruto - $record->pesoTara;
                             $mermaMaterias = ($record->materiasExtranas > 1.5) ? $record->materiasExtranas - 1.5 : 0;

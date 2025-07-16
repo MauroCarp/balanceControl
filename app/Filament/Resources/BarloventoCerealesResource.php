@@ -474,11 +474,21 @@ class BarloventoCerealesResource extends Resource
                         ];
 
                         foreach ($records as $record) {
-                            $mermaHumedad = DB::table('merma_humedad')
-                                ->where('cereal', $record->cereal)
-                                ->where('humedad', $record->humedad)
-                                ->value('merma');
-                            $mermaManipuleo = $manipuleo[$record->cereal] ?? 0;
+
+                            $mermaHumedad = 0;
+
+                            $mermaManipuleo = 0;
+
+                            if($record->humedad > 14.5) {
+
+                                $mermaHumedad = DB::table('merma_humedad')
+                                    ->where('cereal', $record->cereal)
+                                    ->where('humedad', $record->humedad)
+                                    ->value('merma');
+
+                                $mermaManipuleo = $manipuleo[$record->cereal] ?? 0;
+                            }
+
                             $pesoNeto = $record->pesoBruto - $record->pesoTara;
                             $mermaMaterias = ($record->materiasExtranas > 1.5) ? $record->materiasExtranas - 1.5 : 0;
                             $merma = $mermaHumedad + $mermaManipuleo + $mermaMaterias + $record->tierra + $record->olor;
@@ -512,7 +522,7 @@ class BarloventoCerealesResource extends Resource
                         // Generar PDF usando Dompdf
                         $pdf = app('dompdf.wrapper');
                         $pdf->loadHTML($html)->setPaper('A4', 'landscape');
-                        $filename = 'Reporte_Ingreso_Insumos_Paihuen_' . now()->format('Ymd_His') . '.pdf';
+                        $filename = 'Reporte_Ingreso_Insumos_Barlovento_' . now()->format('Ymd_His') . '.pdf';
                         // return response($pdf->output(), 200)
                         //     ->header('Content-Type', 'application/pdf')
                         //     ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
@@ -612,30 +622,35 @@ class BarloventoCerealesResource extends Resource
                                     "Mijo"=>0.25];
 
                                     
-                            $mermaHumedad = DB::table('merma_humedad')
-                            ->where('cereal', $record->cereal)
-                            ->where('humedad', $record->humedad)
-                            ->value('merma');
+                                    
+                            $mermaHumedad = 0;
+
+                            $mermaManipuleo = 0;
+
+                            if($record->humedad > 14.5) {
+                            
+                                $mermaHumedad = DB::table('merma_humedad')
+                                ->where('cereal', $record->cereal)
+                                ->where('humedad', $record->humedad)
+                                ->value('merma');
+                            
+                                $mermaManipuleo = $manipuleo[$record->cereal] ?? 0;
+                            }
 
                             
-                            
                             $sheet->setCellValue('J' . $row, $mermaHumedad);
-                            $sheet->setCellValue('K' . $row, $manipuleo[$record->cereal]);
+                            $sheet->setCellValue('K' . $row, $mermaManipuleo);
                             $sheet->setCellValue('L' . $row, $record->calidad);
                             $sheet->setCellValue('M' . $row, $record->materiasExtranas);
                             $sheet->setCellValue('N' . $row, $record->tierra);
                             $sheet->setCellValue('O' . $row, $record->olor);
-
-                            $mermaManipuleo = $manipuleo[$record->cereal];
 
                             $pesoNeto = $record->pesoBruto - $record->pesoTara;
                             $mermaMaterias = ($record->materiasExtranas > 1.5) ? $record->materiasExtranas - 1.5 : 0;
                             $merma = $mermaHumedad + $mermaManipuleo + $mermaMaterias + $record->tierra + $record->olor;
                             $pesoNetoMermas = ($pesoNeto - ($pesoNeto * ($merma / 100)));
 
-
-
-                            $sheet->setCellValue('P' . $row, number_format($pesoNetoMermas, 0, ',', '.'));
+                            $sheet->setCellValue('P' . $row, number_format($pesoNetoMermas, 0, '', ''));
                             $sheet->setCellValue('Q' . $row, ($record->granosRotos ? 'Sí' : 'No'));
                             $sheet->setCellValue('R' . $row, ($record->granosQuebrados ? 'Sí' : 'No'));
                             $sheet->setCellValue('S' . $row, $record->destino === 'siloBolsa' ? 'Silo Bolsa' : ($record->destino === 'plantaSilo' ? 'Planta de Silo' : $record->destino));
