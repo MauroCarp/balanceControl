@@ -241,10 +241,14 @@ class BarloventoCerealesResource extends Resource
                             ->label('% Merma de Humedad')
                             ->getStateUsing(function ($record) {
 
-                                $merma = DB::table('merma_humedad')
-                                ->where('cereal', $record->cereal)
-                                ->where('humedad', $record->humedad)
-                                ->value('merma');
+                                $merma = 0; 
+
+                                if($record->humedad > 14.5) {
+                                    $merma = DB::table('merma_humedad')
+                                    ->where('cereal', $record->cereal)
+                                    ->where('humedad', $record->humedad)
+                                    ->value('merma');
+                                }
 
                                 return $merma . '%';
                             })
@@ -255,7 +259,13 @@ class BarloventoCerealesResource extends Resource
                             ->label('% Manipuleo')
                             ->getStateUsing(function ($record) {
 
-                               $mermaManipuleo = [
+                                $mermaManipuleo = 0;
+
+                                if($record->humedad > 14.5) {
+                                    $mermaManipuleo = $manipuleo[$record->cereal] ?? 0;
+                                }
+
+                                $mermaManipuleo = [
                                     "Maiz"=>0.25,
                                     "Sorgo"=>0.25,   
                                     "Trigo"=>0.10,
@@ -302,10 +312,20 @@ class BarloventoCerealesResource extends Resource
                             ->label('Peso Neto por Mermas')
                             ->getStateUsing(function ($record) {
 
-                                $mermaHumedad = DB::table('merma_humedad')
-                                ->where('cereal', $record->cereal)
-                                ->where('humedad', $record->humedad)
-                                ->value('merma');
+                                    
+                                $mermaHumedad = 0;
+
+                                $mermaManipuleo = 0;
+
+                                if($record->humedad > 14.5) {
+                                
+                                    $mermaHumedad = DB::table('merma_humedad')
+                                    ->where('cereal', $record->cereal)
+                                    ->where('humedad', $record->humedad)
+                                    ->value('merma');
+                                
+                                    $mermaManipuleo = $manipuleo[$record->cereal] ?? 0;
+                                }
 
                                 $manipuleo = [
                                     "Maiz"=>0.25,
@@ -319,8 +339,6 @@ class BarloventoCerealesResource extends Resource
                                     "Triticale"=>0.5,
                                     "Arroz"=>0.13,
                                     "Mijo"=>0.25];
-
-                                $mermaManipuleo = $manipuleo[$record->cereal];
 
                                 $pesoNeto = $record->pesoBruto - $record->pesoTara;
                                 $mermaMaterias = ($record->materiasExtranas > 1.5) ? $record->materiasExtranas - 1.5 : 0;
@@ -621,8 +639,6 @@ class BarloventoCerealesResource extends Resource
                                     "Arroz"=>0.13,
                                     "Mijo"=>0.25];
 
-                                    
-                                    
                             $mermaHumedad = 0;
 
                             $mermaManipuleo = 0;
