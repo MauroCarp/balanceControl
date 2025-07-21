@@ -491,6 +491,11 @@ class BarloventoCerealesResource extends Resource
                             "Soja"=>0.25, "Girasol"=>0.20, "Centeno"=>0.20, "Triticale"=>0.5, "Arroz"=>0.13, "Mijo"=>0.25
                         ];
 
+                        $pesoBrutoTotal = 0;
+                        $taraTotal = 0;
+                        $pesoNetoTotal = 0;
+                        $pesoNetoMermasTotal = 0;
+
                         foreach ($records as $record) {
 
                             $mermaHumedad = 0;
@@ -534,7 +539,36 @@ class BarloventoCerealesResource extends Resource
                             $html .= '<td>' . ($record->destino === 'siloBolsa' ? 'Silo Bolsa' : ($record->destino === 'plantaSilo' ? 'Planta de Silo' : $record->destino)) . '</td>';
                             $html .= '<td>' . $record->observaciones . '</td>';
                             $html .= '</tr>';
+
+                            $pesoBrutoTotal += $record->pesoBruto;
+                            $taraTotal += $record->pesoTara;
+                            $pesoNetoTotal += $pesoNeto;
+                            $pesoNetoMermasTotal += $pesoNetoMermas;
+                            
                         }
+
+                        $html .= '<tr>
+                                    <td colspan="2"><b>TOTALES</b></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>' . number_format($pesoBrutoTotal, 0, ',', '.') . '</td>
+                                    <td>' . number_format($taraTotal, 0, ',', '.') . '</td>
+                                    <td>' . number_format($pesoNetoTotal, 0, ',', '.') . '</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>' . number_format($pesoNetoMermasTotal, 0, ',', '.') . '</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    </tr>';
+
                         $html .= '</tbody></table>';
 
                         // Generar PDF usando Dompdf
@@ -613,6 +647,12 @@ class BarloventoCerealesResource extends Resource
                         ];
                         $sheet->fromArray($headers, null, 'A2');
 
+                        
+                        $pesoBrutoTotal = 0;
+                        $taraTotal = 0;
+                        $pesoNetoTotal = 0;
+                        $pesoNetoMermasTotal = 0;
+
                         // Datos
                         $row = 3;
                         foreach ($records as $record) {
@@ -672,8 +712,22 @@ class BarloventoCerealesResource extends Resource
                             $sheet->setCellValue('S' . $row, $record->destino === 'siloBolsa' ? 'Silo Bolsa' : ($record->destino === 'plantaSilo' ? 'Planta de Silo' : $record->destino));
                             $sheet->setCellValue('T' . $row, $record->observaciones);
                             $row++;
+
+                            $pesoBrutoTotal += $record->pesoBruto;
+                            $taraTotal += $record->pesoTara;
+                            $pesoNetoTotal += $pesoNeto;
+                            $pesoNetoMermasTotal += $pesoNetoMermas;
+                            
                         }
 
+                        $sheet->mergeCells('A' . $row . ':B' . $row);
+
+                        $sheet->setCellValue('A' . $row, 'TOTALES');
+                        $sheet->setCellValue('F' . $row, $pesoBrutoTotal);
+                        $sheet->setCellValue('G' . $row, $taraTotal);
+                        $sheet->setCellValue('H' . $row, $pesoNetoTotal);
+                        $sheet->setCellValue('P' . $row, $pesoNetoMermasTotal);
+                        
                         // Guardar en memoria y devolver como descarga
                         $filename = 'Reporte_Ingreso_Insumos_Barlovento' . now()->format('Ymd_His') . '.xlsx';
                         $tempFile = tempnam(sys_get_temp_dir(), $filename);
