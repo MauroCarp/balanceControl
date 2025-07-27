@@ -205,9 +205,14 @@ class BarloventoEgresosResource extends Resource
                     ->label('Destino')
                     ->getStateUsing(function ($record) {
                         if ($record->tipoDestino === 'Faena Propia') {
-                            return ucfirst($record->faenaPropia) . ' - ' . $record->frigorifico;
+                            $faenaPropiaNombre = DestinosEgresos::find($record->faenaPropia)?->nombre ?? '';
+                            $frigorifico = DestinosEgresos::find($record->frigorifico)?->nombre ?? '';
+
+                            return ucfirst($faenaPropiaNombre) . ' - ' . $frigorifico;
                         } elseif ($record->tipoDestino === 'Venta a Terceros') {
-                            return $record->ventaTerceros;
+                            $ventaTerceros = DestinosEgresos::find($record->ventaTerceros)?->nombre ?? '';
+
+                            return $ventaTerceros;
                         }
                         return null;
                     }),
@@ -262,7 +267,12 @@ class BarloventoEgresosResource extends Resource
                         TextEntry::make('flete')
                             ->label('Flete/Camion')
                             ->size('lg')
-                            ->weight('bold'),
+                            ->weight('bold')
+                            ->getStateUsing(function ($record) {
+                                $flete = DestinosEgresos::find($record->flete)?->nombre ?? '';
+
+                               return ucfirst($flete);
+                            }),
                         TextEntry::make('tipoDestino')
                             ->label('Destino')
                             ->size('lg')
@@ -273,18 +283,30 @@ class BarloventoEgresosResource extends Resource
                             ->weight('bold')
                             ->visible(fn ($record) => $record->tipoDestino === 'Faena Propia')
                             ->getStateUsing(function ($record) {
-                               return ucfirst($record->faenaPropia);
+                                $faenaPropia = DestinosEgresos::find($record->faenaPropia)?->nombre ?? '';
+
+                               return ucfirst($faenaPropia);
                             }),
                         TextEntry::make('ventaTerceros')
                             ->label('Venta Terceros')
                             ->size('lg')
                             ->weight('bold')
-                            ->visible(fn ($record) => $record->tipoDestino === 'Venta a Terceros'),
+                            ->visible(fn ($record) => $record->tipoDestino === 'Venta a Terceros')
+                            ->getStateUsing(function ($record) {
+                                $ventaTerceros = DestinosEgresos::find($record->ventaTerceros)?->nombre ?? '';
+
+                               return ucfirst($ventaTerceros);
+                            }),
                         TextEntry::make('frigorifico')
                             ->label('Frigorifico')
                             ->size('lg')
                             ->weight('bold')
-                            ->visible(fn ($record) => $record->tipoDestino === 'Faena Propia'),
+                            ->visible(fn ($record) => $record->tipoDestino === 'Faena Propia')
+                            ->getStateUsing(function ($record) {
+                                $frigorifico = DestinosEgresos::find($record->frigorifico)?->nombre ?? '';
+
+                               return ucfirst($frigorifico);
+                            }),
                         TextEntry::make('pesoBruto')
                             ->label('Peso Bruto')
                             ->size('lg')
@@ -325,7 +347,10 @@ class BarloventoEgresosResource extends Resource
                         TextEntry::make('cantidad')
                             ->label('Cantidad')
                             ->size('lg')
-                            ->weight('bold'),
+                            ->weight('bold')
+                            ->getStateUsing(function ($record) {
+                                return $record->novillos + $record->vaquillonas;
+                            }),
                     ]),
             ]),
         ]); 

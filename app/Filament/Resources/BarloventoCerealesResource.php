@@ -392,12 +392,12 @@ class BarloventoCerealesResource extends Resource
                     ->label('Carta de Porte')
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('pesoBruto')
-                    ->label('Peso Bruto')
+                Tables\Columns\TextColumn::make('pesoNeto')
+                    ->label('Peso Neto')
                     ->sortable()
                     ->searchable()
-                    ->formatStateUsing(function ($state) {
-                        return number_format($state,0,',','.');
+                    ->getStateUsing(function ($record) {
+                        return number_format($record->pesoBruto - $record->pesoTara, 0, ',', '.') . ' Kg';
                     }),
                 Tables\Columns\TextColumn::make('vendedor')
                     ->label('Vendedor')

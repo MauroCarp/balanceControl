@@ -41,7 +41,7 @@ class BarloventoIngresosResource extends Resource
             Wizard::make([
                 Wizard\Step::make('Ingreso Origen')
                     ->schema([
-                        Forms\Components\Grid::make(3)
+                        Forms\Components\Grid::make(4)
                             ->schema([
                                 Forms\Components\DatePicker::make('fecha')
                                     ->label('Fecha')
@@ -64,6 +64,8 @@ class BarloventoIngresosResource extends Resource
                                         $consignatario = Consignatarios::create(['nombre' => $data['nombre']]);
                                         return $consignatario->id;
                                     }),
+                                    Forms\Components\TextInput::make('productor')
+                                            ->label('Productor'),
                                     Forms\Components\TextInput::make('dte')
                                             ->label('Nº DTE')
                                             ->required()
@@ -125,21 +127,22 @@ class BarloventoIngresosResource extends Resource
                                                 ->maxLength(191),
                                             Forms\Components\Select::make('origen_desbaste')
                                                 ->options([2=>2,3=>3,4=>4,5=>5])
-                                                ->label('% Desbaste')
+                                                ->label('% Desbaste Comercial')
                                                 ->required()
                                                 ->id('origen_desbaste')
                                                 ->afterStateUpdated(function (callable $set, $state, $get) {
                                                     $set('pesoDesbaste', (float) $get('origen_pesoNeto') - ((float) $get('origen_pesoNeto') * ((float) $get('origen_desbaste') / 100)));
-                                                }),
+                                                })
+                                                ->helperText('Si tiene duda con el desbaste, consultar al comercial.'),
                                             Forms\Components\TextInput::make('pesoDesbaste')
-                                                ->label('Peso Desbaste Comercial')
+                                                ->label('Peso Neto Desbaste Comercial')
                                                 ->disabled()
                                                 ->id('pesoDesbaste')
                                                 ->default(0)
                                                 ->dehydrated(false)
                                                 ->reactive(),
                                             Forms\Components\TextInput::make('pesoDesbasteTecnico')
-                                                ->label('Peso Desbaste Tecnico')
+                                                ->label('Peso Neto Desbaste Tecnico')
                                                 ->disabled()
                                                 ->id('pesoDesbasteTecnico')
                                                 ->default(0)
@@ -260,6 +263,13 @@ class BarloventoIngresosResource extends Resource
                     ->formatStateUsing(function ($state) {
                         return Consignatarios::find($state)?->nombre ?? '-';
                     }),
+                Tables\Columns\TextColumn::make('origen_pesoNeto')
+                    ->label('Peso Neto Origen')
+                    ->sortable()
+                    ->searchable()
+                     ->formatStateUsing(function ($state) {
+                        return number_format($state, 0, ',', '.') . ' Kg';
+                    }),
                 Tables\Columns\TextColumn::make('dte')
                     ->label('Nº DTE')
                     ->sortable()
@@ -268,7 +278,471 @@ class BarloventoIngresosResource extends Resource
             ->defaultSort('fecha', 'desc') // Ordenar por la columna 'nombre' de forma ascendente
 
             ->filters([
-                //
+                Tables\Filters\Filter::make('fecha')
+                    ->form([
+                        Forms\Components\DatePicker::make('from')
+                            ->label('Desde'),
+                        Forms\Components\DatePicker::make('until')
+                            ->label('Hasta'),
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        return $query
+                            ->when($data['from'], fn ($q, $date) => $q->whereDate('fecha', '>=', $date))
+                            ->when($data['until'], fn ($q, $date) => $q->whereDate('fecha', '<=', $date));
+                    }),
+                Tables\Filters\SelectFilter::make('consignatario')
+                    ->label('Consignatario')
+                    ->options(Consignatarios::pluck('nombre', 'id')->toArray()),
+            ])
+             ->headerActions([
+                // Tables\Actions\Action::make('download_filtered_pdf')
+                //     ->label('Reporte PDF Filtrado')
+                //     ->icon('heroicon-o-document-arrow-down')
+                //     ->color('danger')
+                //     ->action(function (Tables\Actions\Action $action) {
+
+                //         $filters = $action->getTable()->getFilters();
+                //         // dump($filters);
+                //         $html = '';
+                //         $query = \App\Models\BarloventoIngresos::query();
+                //         $filtro = '';
+
+                //         if (!empty($filters['fecha']->getState()['from'])) {
+                //             $query->whereDate('fecha', '>=', $filters['fecha']->getState()['from']);
+                //             $filtro .= 'Desde: '. $filters['fecha']->getState()['from'];
+                //         }
+
+                //         if (!empty($filters['fecha']->getState()['until'])) {
+                //             $query->whereDate('fecha', '<=', $filters['fecha']->getState()['until']);
+                //             $filtro .= ' - Hasta: '. $filters['fecha']->getState()['until'];
+                //         }
+                //         if (!empty($filters['consignatario']->getState()['value'])) {
+                //             $query->where('cereal', $filters['cereal']->getState()['value']);
+                //             $filtro .= ' Insumo: '. $filters['cereal']->getState()['value'];
+                //         }
+                //         $query->orderBy('fecha', 'desc');
+                //         $records = $query->get();
+
+                //         // // Construir HTML para el PDF
+                //         //     $html = '<table width="100%">
+                //         //         <tr>    
+                //         //             <td style="width="30%" style="text-align:left;">
+                //         //                 <img src="images/barlovento-logo.png"/>
+                //         //             </td>
+                //         //             <td style="text-align:center;">
+                //         //                 <h2 style="text-align:center;">' . (($filtro == '') ? 'Reporte de Ingreso de Insumos Barlovento' : 'Reporte de Ingreso de Insumos Barlovento - ' . $filtro) . '</h2>
+                //         //             </td>
+                //         //             <td style="text-align:right;">
+                //         //                 ' . date('d-m-Y') . '
+                //         //             </td>
+                //         //         </tr></table>';
+                //         $html .= '<table width="100%" border="0" cellpadding="5" cellspacing="0" style="margin-bottom:20px;">
+                //             <tr>
+                //                 <td style="width:30%;text-align:left;">
+                //                     <img src="images/barlovento-logo.png" height="60"/>
+                //                 </td>
+                //                 <td style="text-align:center;">
+                //                     <h2 style="margin:0;">' . (($filtro == '') ? 'Reporte de Ingreso de Animales Barlovento' : 'Reporte de Ingreso de Animales Barlovento - ' . $filtro) . '</h2>
+                //                 </td>
+                //                 <td style="text-align:right;">
+                //                     ' . date('d-m-Y') . '
+                //                 </td>
+                //             </tr>
+                //         </table>';
+
+                //         // Nueva tabla: una sola tabla con todos los registros, cada fila un registro y cada columna un campo
+                //         if ($records->count() > 0) {
+                //             // Encabezados de la tabla
+                //             $html .= '<table border="1" cellpadding="4" cellspacing="0" width="100%" style="margin-bottom:20px;">';
+                //             $html .= '<thead style="background:#f2f2f2;"><tr>';
+                //             $headers = [
+                //                 'Fecha',
+                //                 'Consignatario',
+                //                 'N° DTE',
+                //                 'Terneros Origen',
+                //                 'Terneras Origen',
+                //                 'Total Hacienda Origen',
+                //                 'Peso Bruto Origen',
+                //                 'Peso Neto Origen',
+                //                 'Tara Origen',
+                //                 'Distancia Recorrida',
+                //                 '% Desbaste',
+                //                 'Peso Desbaste Comercial',
+                //                 'Peso Desbaste Técnico',
+                //                 'Terneros Destino',
+                //                 'Terneras Destino',
+                //                 'Total Hacienda Destino',
+                //                 'Peso Bruto Destino',
+                //                 'Tara Destino',
+                //                 'Peso Neto Destino',
+                //                 'Dif. PN Desbaste Técnico - PN Destino',
+                //                 'Observaciones',
+                //                 'Precio Kg',
+                //                 '$ Total Neto',
+                //                 '$ Total c/IVA',
+                //                 '% Comisión',
+                //                 '$ IVA Comisión',
+                //                 'Flete',
+                //                 '$ Flete',
+                //                 'Otros Gastos',
+                //                 'Total c/IVA a Pagar',
+                //                 '$ Neto de compra por Kg'
+                //             ];
+                //             foreach ($headers as $header) {
+                //                 $html .= '<th>' . $header . '</th>';
+                //             }
+                //             $html .= '</tr></thead><tbody>';
+
+                //             foreach ($records as $record) {
+                //                 $consignatario = \App\Models\Consignatarios::find($record->consignatario);
+                //                 $pesoDesbasteComercial = $record->origen_pesoNeto - ($record->origen_pesoNeto * ($record->origen_desbaste / 100));
+                //                 $porcentajeRestar = 0;
+                //                 if ($record->origen_distancia < 300) {
+                //                     $porcentajeRestar = 1.5 + (floor($record->origen_distancia / 100) * 0.5);
+                //                 } else {
+                //                     $porcentajeRestar = floor($record->origen_distancia / 100) * 1 + (($record->origen_distancia % 100) / 100 * 1);
+                //                 }
+                //                 $pesoDesbasteTecnico = $record->origen_pesoNeto - (($record->origen_pesoNeto * $porcentajeRestar) / 100);
+
+                //                 $pesoNetoDestino = $record->destino_pesoBruto - $record->destino_tara;
+                //                 $diferenciaTecnicoDestino = $pesoDesbasteTecnico - $pesoNetoDestino;
+                //                 $alerta = $diferenciaTecnicoDestino > 0
+                //                     ? '<span style="color:red;">&#10060; Alerta</span>'
+                //                     : '<span style="color:green;">&#10004;</span>';
+
+                //                 $costoTotal = $record->precioKg * $pesoDesbasteComercial;
+                //                 $totalConIva = $costoTotal + (($costoTotal * 10.5) / 100);
+                //                 $comisionPorc = $consignatario?->porcentajeComision ?? 0;
+                //                 $totalComision = ($costoTotal * $comisionPorc) / 100;
+                //                 $ivaComision = ($totalComision * 10.5) / 100;
+                //                 $totalConIvaApagar = $totalConIva + $totalComision + $record->precioFlete + $record->precioOtrosGastos;
+                //                 $precioNetoKg = $pesoDesbasteComercial > 0
+                //                     ? ($record->precioKg + ($totalComision / $pesoDesbasteComercial) + ($record->precioFlete / $pesoDesbasteComercial) + ($record->precioOtrosGastos / $pesoDesbasteComercial))
+                //                     : 0;
+
+                //                 $html .= '<tr>';
+                //                 $html .= '<td>' . \Carbon\Carbon::parse($record->fecha)->format('d-m-Y') . '</td>';
+                //                 $html .= '<td>' . ($consignatario?->nombre ?? '-') . '</td>';
+                //                 $html .= '<td>' . $record->dte . '</td>';
+                //                 $html .= '<td>' . $record->origen_terneros . '</td>';
+                //                 $html .= '<td>' . $record->origen_terneras . '</td>';
+                //                 $html .= '<td>' . ($record->origen_terneros + $record->origen_terneras) . '</td>';
+                //                 $html .= '<td>' . number_format($record->origen_pesoBruto, 0, ',', '.') . ' Kg</td>';
+                //                 $html .= '<td>' . number_format($record->origen_pesoNeto, 0, ',', '.') . ' Kg</td>';
+                //                 $html .= '<td>' . number_format(($record->origen_pesoBruto - $record->origen_pesoNeto), 0, ',', '.') . ' Kg</td>';
+                //                 $html .= '<td>' . $record->origen_distancia . ' Km</td>';
+                //                 $html .= '<td>' . $record->origen_desbaste . '</td>';
+                //                 $html .= '<td>' . number_format($pesoDesbasteComercial, 0, ',', '.') . ' Kg</td>';
+                //                 $html .= '<td>' . number_format($pesoDesbasteTecnico, 0, ',', '.') . ' Kg</td>';
+                //                 $html .= '<td>' . $record->destino_terneros . '</td>';
+                //                 $html .= '<td>' . $record->destino_terneras . '</td>';
+                //                 $html .= '<td>' . ($record->destino_terneros + $record->destino_terneras) . '</td>';
+                //                 $html .= '<td>' . number_format($record->destino_pesoBruto, 0, ',', '.') . ' Kg</td>';
+                //                 $html .= '<td>' . number_format($record->destino_tara, 0, ',', '.') . ' Kg</td>';
+                //                 $html .= '<td>' . number_format($pesoNetoDestino, 0, ',', '.') . ' Kg</td>';
+                //                 $html .= '<td>' . number_format($diferenciaTecnicoDestino, 0, ',', '.') . ' Kg ' . $alerta . '</td>';
+                //                 $html .= '<td>' . ($record->observaciones ?? '-') . '</td>';
+                //                 $html .= '<td>$ ' . number_format($record->precioKg, 2, ',', '.') . '</td>';
+                //                 $html .= '<td>$ ' . number_format($costoTotal, 2, ',', '.') . '</td>';
+                //                 $html .= '<td>$ ' . number_format($totalConIva, 2, ',', '.') . '</td>';
+                //                 $html .= '<td>' . $comisionPorc . '% - $ ' . number_format($totalComision, 2, ',', '.') . '</td>';
+                //                 $html .= '<td>$ ' . number_format($ivaComision, 2, ',', '.') . '</td>';
+                //                 $html .= '<td>' . ($record->precioFlete != 0 ? 'SI' : 'NO') . '</td>';
+                //                 $html .= '<td>$ ' . number_format($record->precioFlete, 2, ',', '.') . '</td>';
+                //                 $html .= '<td>$ ' . number_format($record->precioOtrosGastos, 2, ',', '.') . '</td>';
+                //                 $html .= '<td>$ ' . number_format($totalConIvaApagar, 2, ',', '.') . '</td>';
+                //                 $html .= '<td>$ ' . number_format($precioNetoKg, 2, ',', '.') . '</td>';
+                //                 $html .= '</tr>';
+                //             }
+                //             $html .= '</tbody></table>';
+                //         } else {
+                //             $html .= '<p>No hay registros para mostrar.</p>';
+                //         }
+                    
+                //         // Generar PDF usando Dompdf
+                //         $pdf = app('dompdf.wrapper');
+                //         $pdf->loadHTML($html)->setPaper('A4', 'landscape');
+                //         $filename = 'Reporte_Ingreso_Insumos_Barlovento_' . now()->format('Ymd_His') . '.pdf';
+                //         // return response($pdf->output(), 200)
+                //         //     ->header('Content-Type', 'application/pdf')
+                //         //     ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
+                //         return response()->streamDownload(function () use ($pdf) {
+                //         echo $pdf->stream();
+                //         }, $filename);
+                //     }),
+
+                Tables\Actions\Action::make('download_filtered_excel')
+                    ->label('Reporte Excel Filtrado')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->action(function (Tables\Actions\Action $action) {
+                        // Obtener los filtros seleccionados
+                        $filters = $action->getTable()->getFilters();
+
+                        // Construir la consulta base
+                        $query = \App\Models\BarloventoIngresos::query();
+
+                        $filtro = '';
+                        // Aplicar filtros manualmente según los valores seleccionados
+                        if (!empty($filters['fecha']->getState()['from'])) {
+                            $query->whereDate('fecha', '>=', $filters['fecha']->getState()['from']);
+                            $filtro .= 'Desde: '. $filters['fecha']->getState()['from'];
+                        }
+                        if (!empty($filters['fecha']->getState()['until'])) {
+                            $query->whereDate('fecha', '<=', $filters['fecha']->getState()['until']);
+                            $filtro .= ' - Hasta: '. $filters['fecha']->getState()['until'];
+                        }
+                        if (!empty($filters['consignatario']->getState()['value'])) {
+                            $query->where('consignatario', $filters['consignatario']->getState()['value']);
+                            $consignatarioNombre = \App\Models\Consignatarios::find($filters['consignatario']->getState()['value'])?->nombre ?? '';
+                            $filtro .= ' Consignatario: '. $consignatarioNombre;
+                        }
+
+                        $query->orderBy('fecha', 'desc');
+
+                        // Obtener los registros filtrados
+                        $records = $query->get();
+
+                        // Crear un nuevo Spreadsheet
+                        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+                        $sheet = $spreadsheet->getActiveSheet();
+                        $sheet->mergeCells('A1:AD1');
+                        $sheet->setCellValue('A1', ($filtro == '') ? 'Reporte de Ingreso de Animales Barlovento' : 'Reporte de Ingreso de Animales Barlovento - ' . $filtro);
+
+                        // Encabezados (igual que PDF)
+                        $headers = [
+                            'Fecha',
+                            'Consignatario',
+                            'N° DTE',
+                            'Terneros Origen',
+                            'Terneras Origen',
+                            'Total Hacienda Origen',
+                            'Peso Bruto Origen',
+                            'Peso Neto Origen',
+                            'Tara Origen',
+                            'Distancia Recorrida',
+                            '% Desbaste',
+                            'Peso Desbaste Comercial',
+                            'Peso Desbaste Técnico',
+                            'Terneros Destino',
+                            'Terneras Destino',
+                            'Total Hacienda Destino',
+                            'Peso Bruto Destino',
+                            'Tara Destino',
+                            'Peso Neto Destino',
+                            'Dif. PN Desbaste Técnico - PN Destino',
+                            'Observaciones',
+                            'Precio Kg',
+                            '$ Total Neto',
+                            '$ Total c/IVA',
+                            '% Comisión',
+                            '$ IVA Comisión',
+                            'Flete',
+                            '$ Flete',
+                            'Otros Gastos',
+                            'Total c/IVA a Pagar',
+                            '$ Neto de compra por Kg'
+                        ];
+                        // Escribir los encabezados en la fila 2
+                        $sheet->fromArray($headers, null, 'A2');
+
+                        // Aplicar formato: fondo y negrita a los encabezados
+                        $headerStyle = [
+                            'font' => [
+                                'bold' => true,
+                            ],
+                            'fill' => [
+                                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                                'startColor' => [
+                                    'rgb' => 'D9E1F2', // color celeste claro, puedes cambiarlo
+                                ],
+                            ],
+                        ];
+                        $lastColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headers));
+                        $sheet->getStyle("A2:{$lastColumn}2")->applyFromArray($headerStyle);
+                 
+                        $totalTernerosOrigen = 0;
+                        $totalTernerasOrigen = 0;
+                        $totalHaciendaOrigen = 0;
+                        $totalPesoBrutoOrigen = 0;
+                        $totalPesoNetoOrigen = 0;
+                        $totalTaraOrigen = 0;
+                        $totalPesoDesbasteComercial = 0;
+                        $totalPesoDesbasteTecnico = 0;
+                        $totalTernerosDestino = 0;
+                        $totalTernerasDestino = 0;
+                        $totalHaciendaDestino = 0;
+                        $totalPesoBrutoDestino = 0;
+                        $totalTaraDestino = 0;
+                        $totalPesoNetoDestino = 0;
+                        $totalPrecioKg = 0;
+                        $totalNeto = 0;
+                        $totalConIva = 0;
+                        $totalIvaComision = 0;
+                        $totalFlete = 0;
+                        $totalOtrosGastos = 0;
+                        $totalConIvaApagar = 0;
+                        $totalNetoCompraPorKg = 0;
+                        $totalDistancia = 0;
+                        $totalDesbaste = 0;
+                        $totalRows = 0;
+
+                        $row = 3;
+                        foreach ($records as $record) {
+                            $consignatario = \App\Models\Consignatarios::find($record->consignatario);
+                            $pesoDesbasteComercial = $record->origen_pesoNeto - ($record->origen_pesoNeto * ($record->origen_desbaste / 100));
+                            $porcentajeRestar = 0;
+                            if ($record->origen_distancia < 300) {
+                                $porcentajeRestar = 1.5 + (floor($record->origen_distancia / 100) * 0.5);
+                            } else {
+                                $porcentajeRestar = floor($record->origen_distancia / 100) * 1 + (($record->origen_distancia % 100) / 100 * 1);
+                            }
+                            $pesoDesbasteTecnico = $record->origen_pesoNeto - (($record->origen_pesoNeto * $porcentajeRestar) / 100);
+
+                            $pesoNetoDestino = $record->destino_pesoBruto - $record->destino_tara;
+                            $diferenciaTecnicoDestino = $pesoDesbasteTecnico - $pesoNetoDestino;
+
+                            $costoTotal = $record->precioKg * $pesoDesbasteComercial;
+                            $totalConIva = $costoTotal + (($costoTotal * 10.5) / 100);
+                            $comisionPorc = $consignatario?->porcentajeComision ?? 0;
+                            $totalComision = ($costoTotal * $comisionPorc) / 100;
+                            $ivaComision = ($totalComision * 10.5) / 100;
+                            $totalConIvaApagar = $totalConIva + $totalComision + $record->precioFlete + $record->precioOtrosGastos;
+                            $precioNetoKg = $pesoDesbasteComercial > 0
+                                ? ($record->precioKg + ($totalComision / $pesoDesbasteComercial) + ($record->precioFlete / $pesoDesbasteComercial) + ($record->precioOtrosGastos / $pesoDesbasteComercial))
+                                : 0;
+
+                            $sheet->setCellValue('A' . $row, \Carbon\Carbon::parse($record->fecha)->format('d-m-Y'));
+                            $sheet->setCellValue('B' . $row, $consignatario?->nombre ?? '-');
+                            $sheet->setCellValue('C' . $row, $record->dte);
+                            $sheet->setCellValue('D' . $row, $record->origen_terneros);
+                            $sheet->setCellValue('E' . $row, $record->origen_terneras);
+                            $sheet->setCellValue('F' . $row, $record->origen_terneros + $record->origen_terneras);
+                            $sheet->setCellValue('G' . $row, $record->origen_pesoBruto);
+                            $sheet->setCellValue('H' . $row, $record->origen_pesoNeto);
+                            $sheet->setCellValue('I' . $row, $record->origen_pesoBruto - $record->origen_pesoNeto);
+                            $sheet->setCellValue('J' . $row, $record->origen_distancia);
+                            $sheet->setCellValue('K' . $row, $record->origen_desbaste);
+                            $sheet->setCellValue('L' . $row, $pesoDesbasteComercial);
+                            $sheet->setCellValue('M' . $row, $pesoDesbasteTecnico);
+                            $sheet->setCellValue('N' . $row, $record->destino_terneros);
+                            $sheet->setCellValue('O' . $row, $record->destino_terneras);
+                            $sheet->setCellValue('P' . $row, $record->destino_terneros + $record->destino_terneras);
+                            $sheet->setCellValue('Q' . $row, $record->destino_pesoBruto);
+                            $sheet->setCellValue('R' . $row, $record->destino_tara);
+                            $sheet->setCellValue('S' . $row, $pesoNetoDestino);
+                            $sheet->setCellValue('T' . $row, $diferenciaTecnicoDestino);
+                            $sheet->setCellValue('U' . $row, $record->observaciones ?? '-');
+                            $sheet->setCellValue('V' . $row, $record->precioKg);
+                            $sheet->setCellValue('W' . $row, $costoTotal);
+                            $sheet->setCellValue('X' . $row, $totalConIva);
+                            $sheet->setCellValue('Y' . $row, $comisionPorc . '% - $' . $totalComision);
+                            $sheet->setCellValue('Z' . $row, $ivaComision);
+                            $sheet->setCellValue('AA' . $row, ($record->precioFlete != 0 ? 'SI' : 'NO'));
+                            $sheet->setCellValue('AB' . $row, $record->precioFlete);
+                            $sheet->setCellValue('AC' . $row, $record->precioOtrosGastos);
+                            $sheet->setCellValue('AD' . $row, $totalConIvaApagar);
+                            $sheet->setCellValue('AE' . $row, $precioNetoKg);
+
+                            $row++;
+                            $totalDistancia += $record->origen_distancia;
+                            $totalTernerosOrigen += $record->origen_terneros;
+                            $totalTernerasOrigen += $record->origen_terneras;
+                            $totalHaciendaOrigen += ($record->origen_terneros + $record->origen_terneras);
+                            $totalPesoBrutoOrigen += $record->origen_pesoBruto;
+                            $totalPesoNetoOrigen += $record->origen_pesoNeto;
+                            $totalTaraOrigen += ($record->origen_pesoBruto - $record->origen_pesoNeto);
+                            $totalPesoDesbasteComercial += $pesoDesbasteComercial;
+                            $totalPesoDesbasteTecnico += $pesoDesbasteTecnico;
+                            $totalTernerosDestino += $record->destino_terneros;
+                            $totalTernerasDestino += $record->destino_terneras;
+                            $totalHaciendaDestino += ($record->destino_terneros + $record->destino_terneras);
+                            $totalPesoBrutoDestino += $record->destino_pesoBruto;
+                            $totalTaraDestino += $record->destino_tara;
+                            $totalPesoNetoDestino += $pesoNetoDestino;
+                            $totalPrecioKg += $record->precioKg;
+                            $totalNeto += $costoTotal;
+                            $totalConIva += $totalConIva;
+                            $totalIvaComision += $ivaComision;
+                            $totalFlete += $record->precioFlete;
+                            $totalOtrosGastos += $record->precioOtrosGastos;
+                            $totalConIvaApagar += $totalConIvaApagar;
+                            $totalNetoCompraPorKg += $precioNetoKg;
+                            $totalDesbaste += $record->origen_desbaste;
+
+                            $totalRows++;
+                        }
+
+                        // Escribir la fila de totales
+                        $sheet->setCellValue('A' . $row, 'TOTALES');
+                        $sheet->setCellValue('D' . $row, $totalTernerosOrigen);
+                        $sheet->setCellValue('E' . $row, $totalTernerasOrigen);
+                        $sheet->setCellValue('F' . $row, $totalHaciendaOrigen);
+                        $sheet->setCellValue('G' . $row, $totalPesoBrutoOrigen);
+                        $sheet->setCellValue('H' . $row, $totalPesoNetoOrigen);
+                        $sheet->setCellValue('I' . $row, $totalTaraOrigen);
+                        $sheet->setCellValue('L' . $row, $totalPesoDesbasteComercial);
+                        $sheet->setCellValue('M' . $row, $totalPesoDesbasteTecnico);
+                        $sheet->setCellValue('N' . $row, $totalTernerosDestino);
+                        $sheet->setCellValue('O' . $row, $totalTernerasDestino);
+                        $sheet->setCellValue('P' . $row, $totalHaciendaDestino);
+                        $sheet->setCellValue('Q' . $row, $totalPesoBrutoDestino);
+                        $sheet->setCellValue('R' . $row, $totalTaraDestino);
+                        $sheet->setCellValue('S' . $row, $totalPesoNetoDestino);
+                        $sheet->setCellValue('V' . $row, $totalPrecioKg);
+                        $sheet->setCellValue('W' . $row, $totalNeto);
+                        $sheet->setCellValue('X' . $row, $totalConIva);
+                        $sheet->setCellValue('Z' . $row, $totalIvaComision);
+                        $sheet->setCellValue('AB' . $row, $totalFlete);
+                        $sheet->setCellValue('AC' . $row, $totalOtrosGastos);
+                        $sheet->setCellValue('AD' . $row, $totalConIvaApagar);
+                        $sheet->setCellValue('AE' . $row, $totalNetoCompraPorKg);
+                        $row++;
+                        $sheet->setCellValue('A' . $row, 'AVGERAGE');
+                        $sheet->setCellValue('D' . $row,  ($totalRows > 0) ?$totalTernerosOrigen / $totalRows : 0);
+                        $sheet->setCellValue('E' . $row,  ($totalRows > 0) ?$totalTernerasOrigen / $totalRows : 0);
+                        $sheet->setCellValue('F' . $row,  ($totalRows > 0) ?$totalHaciendaOrigen / $totalRows : 0);
+                        $sheet->setCellValue('G' . $row,  ($totalRows > 0) ?$totalPesoBrutoOrigen / $totalRows : 0);
+                        $sheet->setCellValue('H' . $row,  ($totalRows > 0) ?$totalPesoNetoOrigen / $totalRows : 0);
+                        $sheet->setCellValue('I' . $row,  ($totalRows > 0) ?$totalTaraOrigen / $totalRows : 0);
+                        $sheet->setCellValue('J' . $row,  ($totalRows > 0) ? $totalDistancia / $totalRows : 0);
+                        $sheet->setCellValue('K' . $row,  ($totalRows > 0) ? $totalDesbaste / $totalRows : 0);
+                        $sheet->setCellValue('L' . $row,  ($totalRows > 0) ?$totalPesoDesbasteComercial / $totalRows : 0);
+                        $sheet->setCellValue('M' . $row,  ($totalRows > 0) ?$totalPesoDesbasteTecnico / $totalRows : 0);
+                        $sheet->setCellValue('N' . $row,  ($totalRows > 0) ?$totalTernerosDestino / $totalRows : 0);
+                        $sheet->setCellValue('O' . $row,  ($totalRows > 0) ?$totalTernerasDestino / $totalRows : 0);
+                        $sheet->setCellValue('P' . $row,  ($totalRows > 0) ?$totalHaciendaDestino / $totalRows : 0);
+                        $sheet->setCellValue('Q' . $row,  ($totalRows > 0) ?$totalPesoBrutoDestino / $totalRows : 0);
+                        $sheet->setCellValue('R' . $row,  ($totalRows > 0) ?$totalTaraDestino / $totalRows : 0);
+                        $sheet->setCellValue('S' . $row,  ($totalRows > 0) ?$totalPesoNetoDestino / $totalRows : 0);
+                        $sheet->setCellValue('V' . $row,  ($totalRows > 0) ?$totalPrecioKg / $totalRows : 0);
+                        $sheet->setCellValue('W' . $row,  ($totalRows > 0) ?$totalNeto / $totalRows : 0);
+                        $sheet->setCellValue('X' . $row,  ($totalRows > 0) ?$totalConIva / $totalRows : 0);
+                        $sheet->setCellValue('Z' . $row,  ($totalRows > 0) ?$totalIvaComision / $totalRows : 0);
+                        $sheet->setCellValue('AB' . $row, ($totalRows > 0) ? $totalFlete / $totalRows : 0);
+                        $sheet->setCellValue('AC' . $row, ($totalRows > 0) ? $totalOtrosGastos / $totalRows : 0);
+                        $sheet->setCellValue('AD' . $row, ($totalRows > 0) ? $totalConIvaApagar / $totalRows : 0);
+                        $sheet->setCellValue('AE' . $row, ($totalRows > 0) ? $totalNetoCompraPorKg / $totalRows : 0);
+                        // Aplicar formato negrita a la fila de totales
+                        $desdeRow = $row - 1;
+                        $sheet->getStyle("A{$desdeRow}:AE{$row}")->getFont()->setBold(true);
+                        $totalsStyle = [
+                            'fill' => [
+                                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                                'startColor' => [
+                                    'rgb' => 'F9F9C5', // amarillo claro
+                                ],
+                            ],
+                        ];
+                        $sheet->getStyle("A{$desdeRow}:AE{$row}")->applyFromArray($totalsStyle);
+                        $filename = 'Reporte_Ingreso_Animales_Barlovento_' . now()->format('Ymd_His') . '.xlsx';
+                        $tempFile = tempnam(sys_get_temp_dir(), $filename);
+                        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+                        $writer->save($tempFile);
+
+                        return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
+                    }),
+                Tables\Actions\CreateAction::make()->label('Nuevo Registro'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
@@ -307,7 +781,10 @@ class BarloventoIngresosResource extends Resource
                         TextEntry::make('fecha')
                             ->label('Fecha')
                             ->size('lg')
-                            ->weight('bold'),
+                            ->weight('bold')
+                            ->getStateUsing(function ($record) {
+                                return \Carbon\Carbon::parse($record->fecha)->format('d-m-Y');
+                            }),
                         TextEntry::make('consignatario')
                             ->label('Consignatario')
                             ->size('lg')
@@ -484,8 +961,14 @@ class BarloventoIngresosResource extends Resource
 
                                             $diferencia = $pesoNetoDesbasteTecnico - $pesoNetoDestino;
 
-                                            return number_format($diferencia, 0, ',', '.') . ' Kg';
-                                        }),
+                                            if($pesoNetoDesbasteTecnico > $pesoNetoDestino) {
+                                                return number_format($diferencia, 0, ',', '.') . ' Kg <span style="color:red;">&#128078; Alerta</span>';
+                                            } else {
+                                                return number_format($diferencia, 0, ',', '.') . ' Kg <span style="color:green;">&#128077;</span>';
+                                            }
+
+                                        })
+                                        ->html(),
                                     TextEntry::make('observaciones')
                                         ->label('Observaciones')
                                         ->size('lg')
