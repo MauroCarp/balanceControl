@@ -194,6 +194,12 @@ class BarloventoEgresosResource extends Resource
                     ->sortable()
                     ->searchable()
                     ->date('d-m-Y'),
+                Tables\Columns\TextColumn::make('novillos')
+                    ->label('Novillos')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('vaquillonas')
+                    ->label('Vaquillonas')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('pesoNeto')
                     ->label('Peso Neto')
                     ->getStateUsing(fn ($record) => $record->pesoBruto - $record->pesoTara),
