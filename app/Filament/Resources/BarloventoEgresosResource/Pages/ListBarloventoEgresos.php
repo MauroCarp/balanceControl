@@ -13,8 +13,6 @@ class ListBarloventoEgresos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-            ->label('Nuevo Egreso'), // Cambia este texto al deseado
         ];
     }
 

@@ -300,7 +300,7 @@ class BarloventoIngresosResource extends Resource
                     ->label('Consignatario')
                     ->options(Consignatarios::pluck('nombre', 'id')->toArray()),
             ])
-             ->headerActions([
+            ->headerActions([
                 Tables\Actions\Action::make('download_filtered_pdf')
                     ->label('Reporte PDF Filtrado')
                     ->icon('heroicon-o-document-arrow-down')
@@ -329,19 +329,6 @@ class BarloventoIngresosResource extends Resource
                         $query->orderBy('fecha', 'desc');
                         $records = $query->get();
 
-                        // // Construir HTML para el PDF
-                        //     $html = '<table width="100%">
-                        //         <tr>    
-                        //             <td style="width="30%" style="text-align:left;">
-                        //                 <img src="images/barlovento-logo.png"/>
-                        //             </td>
-                        //             <td style="text-align:center;">
-                        //                 <h2 style="text-align:center;">' . (($filtro == '') ? 'Reporte de Ingreso de Insumos Barlovento' : 'Reporte de Ingreso de Insumos Barlovento - ' . $filtro) . '</h2>
-                        //             </td>
-                        //             <td style="text-align:right;">
-                        //                 ' . date('d-m-Y') . '
-                        //             </td>
-                        //         </tr></table>';
                         $html .= '<table width="100%" border="0" cellpadding="5" cellspacing="0" style="margin-bottom:20px;">
                             <tr>
                                 <td style="width:30%;text-align:left;">
@@ -366,8 +353,8 @@ class BarloventoIngresosResource extends Resource
                                 'Consignatario',
                                 'Total Hacienda Origen',
                                 'Peso Neto Origen',
-                                'Peso Desbaste Comercial',
-                                'Peso Desbaste Técnico',
+                                'Peso Neto Desbaste Comercial',
+                                'Peso Neto Desbaste Técnico',
                                 'Peso Neto Destino',
                                 'Dif. PN Desbaste Técnico - PN Destino',
                                 'Observaciones',
