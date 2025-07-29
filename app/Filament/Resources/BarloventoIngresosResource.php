@@ -431,7 +431,7 @@ class BarloventoIngresosResource extends Resource
                         // Generar PDF usando Dompdf
                         $pdf = app('dompdf.wrapper');
                         $pdf->loadHTML($html)->setPaper('A4', 'landscape');
-                        $filename = 'Reporte_Ingreso_Insumos_Barlovento_' . now()->format('Ymd_His') . '.pdf';
+                        $filename = 'Reporte_Ingresos_Hacienda_Barlovento_' . now()->format('Ymd_His') . '.pdf';
                         // return response($pdf->output(), 200)
                         //     ->header('Content-Type', 'application/pdf')
                         //     ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
