@@ -41,7 +41,7 @@ class BarloventoIngresosResource extends Resource
             Wizard::make([
                 Wizard\Step::make('Ingreso Origen')
                     ->schema([
-                        Forms\Components\Grid::make(4)
+                        Forms\Components\Grid::make(5)
                             ->schema([
                                 Forms\Components\DatePicker::make('fecha')
                                     ->label('Fecha')
@@ -64,14 +64,18 @@ class BarloventoIngresosResource extends Resource
                                         $consignatario = Consignatarios::create(['nombre' => $data['nombre']]);
                                         return $consignatario->id;
                                     }),
-                                    Forms\Components\TextInput::make('productor')
-                                            ->label('Productor'),
-                                    Forms\Components\TextInput::make('dte')
-                                            ->label('Nº DTE')
-                                            ->required()
-                                            ->maxLength(11)
-                                            ->mask('999999999-9')
-                                            ->helperText('Ingrese 9 dígitos seguidos de 1 dígito final, sin el guion.'),
+                                Forms\Components\Select::make('hoteleria')
+                                    ->options([0=>'NO', 1=>'SI'])
+                                    ->label('¿Hotelería?')
+                                    ->required(),
+                                Forms\Components\TextInput::make('productor')
+                                        ->label('Productor'),
+                                Forms\Components\TextInput::make('dte')
+                                        ->label('Nº DTE')
+                                        ->required()
+                                        ->maxLength(11)
+                                        ->mask('999999999-9')
+                                        ->helperText('Ingrese 9 dígitos seguidos de 1 dígito final, sin el guion.'),
                                 Forms\Components\Grid::make(3)
                                     ->schema([
                                         
