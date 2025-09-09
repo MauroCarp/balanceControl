@@ -913,7 +913,7 @@ class BarloventoIngresosResource extends Resource
             // Sección 1: Información General
             InfolistSection::make('Información General')
             ->schema([
-                GridInfolist::make(4)
+                GridInfolist::make(5)
                     ->schema([
                         TextEntry::make('fecha')
                             ->label('Fecha')
@@ -923,11 +923,22 @@ class BarloventoIngresosResource extends Resource
                                 return \Carbon\Carbon::parse($record->fecha)->format('d-m-Y');
                             }),
                         TextEntry::make('consignatario')
-                            ->label('Consignatario')
+                            ->label(function($record){
+                                $consignatario = Consignatarios::find($record->consignatario);
+                                return ($consignatario && ($consignatario->isConsignatario === true || $consignatario->isConsignatario == 1)) ? 'Consignatario' : 'Comisionista';
+                            })
                             ->size('lg')
                             ->weight('bold')
                             ->getStateUsing(function ($record) {
                                 return Consignatarios::find($record->consignatario)?->nombre ?? '-';
+                            }),
+                        TextEntry::make('productor')
+                            ->label('Productor')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->visible(function ($record) {
+                                $consignatario = Consignatarios::find($record->consignatario);
+                                return $consignatario && ($consignatario->isConsignatario === true || $consignatario->isConsignatario == 1);
                             }),
                         TextEntry::make('hoteleria')
                             ->label('¿Hotelería?')
