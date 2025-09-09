@@ -41,41 +41,68 @@ class BarloventoIngresosResource extends Resource
             Wizard::make([
                 Wizard\Step::make('Ingreso Origen')
                     ->schema([
-                        Forms\Components\Grid::make(5)
+                        Forms\Components\Grid::make(3)
                             ->schema([
                                 Forms\Components\DatePicker::make('fecha')
                                     ->label('Fecha')
                                     ->required(),
-                                Forms\Components\Select::make('consignatario')
-                                    ->options(Consignatarios::pluck('nombre','id')->toArray())
-                                    ->label('Consignatario / Comisionista')
-                                    ->searchable()
-                                    ->preload()
-                                    ->required()
-                                    ->createOptionForm([
-                                        Forms\Components\TextInput::make('nombre')
-                                            ->label('Consignatario / Comisionista')
-                                            ->required(),
-                                        Forms\Components\TextInput::make('porcentajeConsignatario')
-                                            ->label('% Comision')
-                                            ->required(),
-                                    ])
-                                    ->createOptionUsing(function (array $data): int {
-                                        $consignatario = Consignatarios::create(['nombre' => $data['nombre']]);
-                                        return $consignatario->id;
-                                    }),
-                                Forms\Components\Select::make('hoteleria')
-                                    ->options([0=>'NO', 1=>'SI'])
-                                    ->label('¿Hotelería?')
-                                    ->required(),
-                                Forms\Components\TextInput::make('productor')
-                                        ->label('Productor'),
                                 Forms\Components\TextInput::make('dte')
                                         ->label('Nº DTE')
                                         ->required()
                                         ->maxLength(11)
                                         ->mask('999999999-9')
                                         ->helperText('Ingrese 9 dígitos seguidos de 1 dígito final, sin el guion.'),
+                                Forms\Components\Select::make('hoteleria')
+                                    ->options([0=>'NO', 1=>'SI'])
+                                    ->label('¿Hotelería?')
+                                    ->required(),
+                                Forms\Components\Select::make('selectConsignatarioComisionista')
+                                    ->options(['consignatario'=>'Consignatario', 'comisionista'=>'Comisionista'])
+                                    ->label('Consignatario / Comisionista')
+                                    ->default('consignatario')
+                                    ->reactive(),
+                                Forms\Components\Select::make('consignatario')
+                                    ->options(function ($get) {
+                                        if ($get('selectConsignatarioComisionista') === 'consignatario') {
+                                            return Consignatarios::where('isConsignatario', true)->pluck('nombre', 'id')->toArray();
+                                        } elseif ($get('selectConsignatarioComisionista') === 'comisionista') {
+                                            return Consignatarios::where('isConsignatario', false)->pluck('nombre', 'id')->toArray();
+                                        }
+                                        return [];
+                                    })
+                                    ->label(function ($get) {
+                                        return $get('selectConsignatarioComisionista') === 'consignatario'
+                                            ? 'Consignatario' : 'Comisionista';
+                                    })
+                                    ->searchable()
+                                    ->preload()
+                                    ->required()
+                                    ->reactive()
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('nombre')
+                                            ->label('Nombre')
+                                            ->required(),
+                                        Forms\Components\TextInput::make('porcentajeComision')
+                                            ->label('% Comision')
+                                            ->required(),
+                                    ])
+                                    ->createOptionUsing(function (array $data, callable $get): int {
+                                        $isConsignatario = $get('selectConsignatarioComisionista') === 'consignatario';
+                                        $consignatario = Consignatarios::create([
+                                            'nombre' => $data['nombre'],
+                                            'porcentajeComision' => $data['porcentajeComision'], 
+                                            'isConsignatario' => $isConsignatario
+                                        ]);
+                                        return $consignatario->id;
+                                    }),
+                                
+                                Forms\Components\TextInput::make('productor')
+                                        ->label('Productor')
+                                        ->required(function(callable $get){
+                                            return $get('selectConsignatarioComisionista') == 'consignatario' ? true : false;
+                                        })
+                                        ->reactive(),
+                                
                                 Forms\Components\Grid::make(3)
                                     ->schema([
                                         
@@ -699,6 +726,170 @@ class BarloventoIngresosResource extends Resource
                     ->color('warning')
                     ->label('')
                     ->icon('heroicon-o-pencil-square'),
+                Tables\Actions\Action::make('download_infolist_pdf')
+                    ->label('Reporte')
+                    ->icon('heroicon-o-document')
+                    ->color('primary')
+                    ->action(function ($record) {
+                        $consignatario = \App\Models\Consignatarios::find($record->consignatario);
+                        $porcentajeRestar = 0;
+                        if ($record->origen_distancia < 300) {
+                            $porcentajeRestar = 1.5 + (floor($record->origen_distancia / 100) * 0.5);
+                        } else {
+                            $porcentajeRestar = floor($record->origen_distancia / 100) * 1 + (($record->origen_distancia % 100) / 100 * 1);
+                        }
+                        $pesoDesbasteComercial = $record->origen_pesoNeto - ($record->origen_pesoNeto * ($record->origen_desbaste / 100));
+                        $pesoDesbasteTecnico = $record->origen_pesoNeto - (($record->origen_pesoNeto * $porcentajeRestar) / 100);
+                        $pesoNetoDestino = $record->destino_pesoBruto - $record->destino_tara;
+                        $diferenciaTecnicoDestino = $pesoDesbasteTecnico - $pesoNetoDestino;
+                        $costoTotal = $record->precioKg * $pesoDesbasteComercial;
+                        $totalConIva = $costoTotal + (($costoTotal * 10.5) / 100);
+                        $comisionPorc = $consignatario?->porcentajeComision ?? 0;
+                        $totalComision = ($costoTotal * $comisionPorc) / 100;
+                        $ivaComision = ($totalComision * 10.5) / 100;
+                        $totalConIvaApagar = $totalConIva + $totalComision + $record->precioFlete + $record->precioOtrosGastos;
+                        $precioNetoKg = $pesoDesbasteComercial > 0
+                            ? ($record->precioKg + ($totalComision / $pesoDesbasteComercial) + ($record->precioFlete / $pesoDesbasteComercial) + ($record->precioOtrosGastos / $pesoDesbasteComercial))
+                            : 0;
+
+                        $html = '
+                        <style>
+                            body { font-family: DejaVu Sans, sans-serif; font-size: 12px; }
+                            h2 { margin-bottom: 10px; }
+                            table { border-collapse: collapse; width: 100%; margin-bottom: 15px;}
+                            th, td { border: 1px solid #ccc; padding: 6px 8px; }
+                            th { background: #f2f2f2; }
+                            .section-title { background: #e9ecef; font-weight: bold; padding: 6px 8px; }
+                        </style>
+                        <table width="100%" border="0" cellpadding="5" cellspacing="0" style="margin-bottom:20px;">
+                            <tr>
+                                <td style="width:30%;text-align:left;">
+                                    <img src="images/barlovento-logo.png" height="40"/>
+                                </td>
+                                <td style="text-align:center;">
+                                    <h2 style="margin:0;">Detalle de Ingreso de Animales Barlovento</h2>
+                                </td>
+                                <td style="text-align:right;">
+                                    ' . date('d-m-Y') . '
+                                </td>
+                            </tr>
+                        </table>
+                        <table>
+                            <tr><td colspan="3" class="section-title">Información General</td></tr>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Consignatario</th>
+                                <th>N° DTE</th>
+                            </tr>
+                            <tr>
+                                <td>' . \Carbon\Carbon::parse($record->fecha)->format('d-m-Y') . '</td>
+                                <td>' . ($consignatario?->nombre ?? '-') . '</td>
+                                <td>' . $record->dte . '</td>
+                            </tr>
+                        </table>
+                        <table style="margin-bottom:0">
+                            <tr><td colspan="3" class="section-title">Origen - Información de Hacienda</td></tr>
+                            <tr>
+                                <th>Terneros</th>
+                                <th>Terneras</th>
+                                <th>Cantidad Total de Hacienda</th>
+                            </tr>
+                            <tr>
+                                <td>' . $record->origen_terneros . '</td>
+                                <td>' . $record->origen_terneras . '</td>
+                                <td>' . ($record->origen_terneros + $record->origen_terneras) . '</td>
+                            </tr>
+                        </table>
+                        <table style="margin-top:0">
+                            <tr><td colspan="7" class="section-title">Origen - Información de Pesos</td></tr>
+                            <tr>
+                                <th>Peso Bruto</th>
+                                <th>Peso Neto</th>
+                                <th>Tara</th>
+                                <th>Distancia Recorrida</th>
+                                <th>% Desbaste</th>
+                                <th>Peso Desbaste Comercial</th>
+                                <th>Peso Desbaste Técnico</th>
+                            </tr>
+                            <tr>
+                                <td>' . number_format($record->origen_pesoBruto, 0, ',', '.') . ' Kg</td>
+                                <td>' . number_format($record->origen_pesoNeto, 0, ',', '.') . ' Kg</td>
+                                <td>' . number_format(($record->origen_pesoBruto - $record->origen_pesoNeto), 0, ',', '.') . ' Kg</td>
+                                <td>' . $record->origen_distancia . ' Km</td>
+                                <td>' . $record->origen_desbaste . ' %</td>
+                                <td>' . number_format($pesoDesbasteComercial, 0, ',', '.') . ' Kg</td>
+                                <td>' . number_format($pesoDesbasteTecnico, 0, ',', '.') . ' Kg</td>
+                            </tr>
+                        </table>
+                        <table style="margin-bottom:0">
+                            <tr><td colspan="3" class="section-title">Destino - Información de Hacienda</td></tr>
+                            <tr>
+                                <th>Terneros</th>
+                                <th>Terneras</th>
+                                <th>Cantidad Total de Hacienda</th>
+                            </tr>
+                            <tr>
+                                <td>' . $record->destino_terneros . '</td>
+                                <td>' . $record->destino_terneras . '</td>
+                                <td>' . ($record->destino_terneros + $record->destino_terneras) . '</td>
+                            </tr>
+                        </table>
+                        <table style="margin-top:0">
+                            <tr><td colspan="5" class="section-title">Destino - Información de Pesos</td></tr>
+                            <tr>
+                                <th>Peso Bruto</th>
+                                <th>Tara</th>
+                                <th>Peso Neto</th>
+                                <th>Dif. Peso Neto Desbaste Técnico - Peso Neto Destino</th>
+                                <th>Observaciones</th>
+                            </tr>
+                            <tr>
+                                <td>' . number_format($record->destino_pesoBruto, 0, ',', '.') . ' Kg</td>
+                                <td>' . number_format($record->destino_tara, 0, ',', '.') . ' Kg</td>
+                                <td>' . number_format($pesoNetoDestino, 0, ',', '.') . ' Kg</td>
+                                <td>' . number_format($diferenciaTecnicoDestino, 0, ',', '.') . ' Kg ' . ($diferenciaTecnicoDestino > 0 ? '<span style="color:red;">Alerta</span>' : '<span style="color:green;">OK</span>') . '</td>
+                                <td>' . ($record->observaciones ?? '-') . '</td>
+                            </tr>
+                        </table>
+                        <table>
+                            <tr><td colspan="8" class="section-title">Contable - Información de Gastos</td></tr>
+                            <tr>
+                                <th>Precio Kg</th>
+                                <th>$ Total Neto</th>
+                                <th>$ Total c/IVA</th>
+                                <th>% Comisión</th>
+                                <th>$ IVA Comisión</th>
+                                <th>Flete</th>
+                                <th>$ Flete</th>
+                                <th>Otros Gastos</th>
+                                <th>Total c/IVA a Pagar</th>
+                                <th>$ Neto de compra por Kg</th>
+
+
+                            </tr>
+                            <tr>
+                                <td>$ ' . number_format($record->precioKg, 2, ',', '.') . '</td>
+                                <td>$ ' . number_format($costoTotal, 2, ',', '.') . '</td>
+                                <td>$ ' . number_format($totalConIva, 2, ',', '.') . '</td>
+                                <td>' . $comisionPorc . '% - $ ' . number_format($totalComision, 2, ',', '.') . '</td>
+                                <td>$ ' . number_format($ivaComision, 2, ',', '.') . '</td>
+                                <td>' . ($record->precioFlete != 0 ? 'SI' : 'NO') . '</td>
+                                <td>$ ' . number_format($record->precioFlete, 2, ',', '.') . '</td>
+                                <td>$ ' . number_format($record->precioOtrosGastos, 2, ',', '.') . '</td>
+                                <td>$ ' . number_format($totalConIvaApagar, 2, ',', '.') . '</td>
+                                <td>$ ' . number_format($precioNetoKg, 2, ',', '.') . '</td>
+                            </tr>
+                        </table>
+                        ';
+
+                        $pdf = app('dompdf.wrapper');
+                        $pdf->loadHTML($html)->setPaper('A4', 'portrait');
+                        $filename = 'Detalle_Ingreso_Animales_Barlovento_' . now()->format('Ymd_His') . '.pdf';
+                        return response()->streamDownload(function () use ($pdf) {
+                            echo $pdf->stream();
+                        }, $filename);
+                    })
+                    ->visible(fn ($record) => $record !== null),
                 Tables\Actions\DeleteAction::make()
                     ->color('danger')
                     ->label('')
@@ -722,7 +913,7 @@ class BarloventoIngresosResource extends Resource
             // Sección 1: Información General
             InfolistSection::make('Información General')
             ->schema([
-                GridInfolist::make(3)
+                GridInfolist::make(4)
                     ->schema([
                         TextEntry::make('fecha')
                             ->label('Fecha')
@@ -738,6 +929,14 @@ class BarloventoIngresosResource extends Resource
                             ->getStateUsing(function ($record) {
                                 return Consignatarios::find($record->consignatario)?->nombre ?? '-';
                             }),
+                        TextEntry::make('hoteleria')
+                            ->label('¿Hotelería?')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->getStateUsing(function ($record) {
+                                return $record->hoteleria == 1 ? 'SI' : 'NO';
+                            }),
+
                         TextEntry::make('dte')
                             ->label('N° DTE')
                             ->size('lg')
