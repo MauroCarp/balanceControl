@@ -60,8 +60,8 @@ class BarloventoIngresosResource extends Resource
                                     ->options(['consignatario'=>'Consignatario', 'comisionista'=>'Comisionista'])
                                     ->label('Consignatario / Comisionista')
                                     ->default('consignatario')
-                                    ->reactive(),
-                                Forms\Components\Select::make('consignatario')
+                                    ->reactive()
+                                    ->dehydrated(false),                                Forms\Components\Select::make('consignatario')
                                     ->options(function ($get) {
                                         if ($get('selectConsignatarioComisionista') === 'consignatario') {
                                             return Consignatarios::where('isConsignatario', true)->pluck('nombre', 'id')->toArray();
@@ -288,11 +288,18 @@ class BarloventoIngresosResource extends Resource
                         return \Carbon\Carbon::parse($state)->format('d-m-Y');
                     }),
                 Tables\Columns\TextColumn::make('consignatario')
-                    ->label('Consignatario')
+                    ->label('Consig. / Comis.')
                     ->sortable()
                     ->searchable()
                     ->formatStateUsing(function ($state) {
                         return Consignatarios::find($state)?->nombre ?? '-';
+                    }),
+                Tables\Columns\TextColumn::make('productor')
+                    ->label('Productor')
+                    ->sortable()
+                    ->searchable()
+                    ->formatStateUsing(function ($state) {
+                        return ($state !== '') ? $state : '-';
                     }),
                 Tables\Columns\TextColumn::make('origen_pesoNeto')
                     ->label('Peso Neto Origen')
