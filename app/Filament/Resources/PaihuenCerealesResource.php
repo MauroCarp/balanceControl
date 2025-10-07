@@ -464,7 +464,7 @@ class PaihuenCerealesResource extends Resource
                         $records = $query->get();
 
                         // Construir HTML para el PDF
-                            $html = '<table width="100%">
+                            $html = '<table width="100%" style="margin-left:-25px;padding-left:0;">
                                 <tr>    
                                     <td style="width="30%" style="text-align:left;">
                                         <img src="images/barlovento-logo.png"/>
@@ -476,7 +476,7 @@ class PaihuenCerealesResource extends Resource
                                         ' . date('d-m-Y') . '
                                     </td>
                                 </tr></table>';
-                        $html .= '<table border="1" cellpadding="4" cellspacing="0" width="100%" style="font-size:12px;"><thead><tr>';
+                        $html .= '<table border="1" cellpadding="4" cellspacing="0" width="100%" style="font-size:12px;margin-left:-25;padding-left:0"><thead><tr>';
                         $headers = [
                             'Fecha', 'Insumo', 'C. Porte', 'Vendedor', 'Corredor', 'P.B', 'Tara', 'P.N',
                             '% Humedad', '% Merma', '% Manipuleo', 'Calidad', 'Materias Extrañas', 'Contiene Tierra',
@@ -745,6 +745,155 @@ class PaihuenCerealesResource extends Resource
                 ->color('primary'),
                 Tables\Actions\EditAction::make()
                 ->label(''),
+                Tables\Actions\Action::make('download_infolist_pdf')
+                    ->label('Reporte')
+                    ->icon('heroicon-o-document')
+                    ->color('primary')
+                    ->action(function ($record) {
+                        $insumo = \App\Models\Insumos::where('insumo', $record->cereal)->first();
+                        $pesoNeto = $record->pesoBruto - $record->pesoTara;
+                        
+                        // Cálculos específicos para cereales
+                        $mermaHumedad = 0;
+                        $pesoNetoHumedad = $pesoNeto;
+                        
+                        if (in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])) {
+                            // Calcular merma de humedad según el cereal
+                            if ($record->cereal == 'Maiz' && $record->humedad > 14.5) {
+                                $mermaHumedad = ($record->humedad - 14.5) * 1.3;
+                            } elseif ($record->cereal == 'Soja' && $record->humedad > 13.5) {
+                                $mermaHumedad = ($record->humedad - 13.5) * 1.2;
+                            } elseif ($record->cereal == 'Cascara de mani' && $record->humedad > 8) {
+                                $mermaHumedad = ($record->humedad - 8) * 1.0;
+                            }
+                            
+                            // Calcular peso neto con mermas
+                            $totalMermas = $mermaHumedad + ($record->materiasExtranas ?? 0) + ($record->tierra ?? 0) + ($record->olor ?? 0);
+                            $pesoNetoHumedad = $pesoNeto - (($pesoNeto * $totalMermas) / 100);
+                        }
+
+                        $html = '
+                        <style>
+                            body { font-family: DejaVu Sans, sans-serif; font-size: 10px; }
+                            h2 { margin-bottom: 10px; }
+                            table { border-collapse: collapse; width: 100%; margin-bottom: 8px;}
+                            th, td { border: 1px solid #ccc; padding: 4px 8px; }
+                            th { background: #f2f2f2; }
+                            .section-title { background: #e9ecef; font-weight: bold; padding: 4px 8px; }
+                        </style>';
+
+                        for ($i=0; $i < 2; $i++) { 
+
+                            $html .= '
+                            <table width="100%" border="0" cellpadding="5" cellspacing="0" style="margin-bottom:20px;">
+                                <tr>
+                                    <td style="width:30%;text-align:left;">
+                                        <img src="images/barlovento-logo.png" height="30"/>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <h2 style="margin:0;">Detalle de Ingreso de Insumos Barlovento</h2>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        ' . date('d-m-Y') . '
+                                    </td>
+                                </tr>
+                            </table>
+                            <table>
+                                <tr><td colspan="5" class="section-title">Información General</td></tr>
+                                <tr>
+                                    <th>Insumo</th>
+                                    <th>Fecha</th>
+                                    <th>Carta de Porte</th>
+                                    <th>Vendedor</th>
+                                    <th>Corredor</th>
+                                </tr>
+                                <tr>
+                                    <td>' . $record->cereal . '</td>
+                                    <td>' . \Carbon\Carbon::parse($record->fecha)->format('d-m-Y') . '</td>
+                                    <td>' . $record->cartaPorte . '</td>
+                                    <td>' . $record->vendedor . '</td>
+                                    <td>' . ($record->corredor ?? '-') . '</td>
+                                </tr>
+                            </table>
+                            <table>
+                                <tr><td colspan="3" class="section-title">Información de Pesos</td></tr>
+                                <tr>
+                                    <th>Peso Bruto</th>
+                                    <th>Tara</th>
+                                    <th>Peso Neto</th>
+                                </tr>
+                                <tr>
+                                    <td>' . number_format($record->pesoBruto, 0, ',', '.') . ' Kg</td>
+                                    <td>' . number_format($record->pesoTara, 0, ',', '.') . ' Kg</td>
+                                    <td>' . number_format($pesoNeto, 0, ',', '.') . ' Kg</td>
+                                </tr>
+                            </table>';
+
+                            // Solo mostrar tabla de calidad si es Maiz, Soja o Cascara de mani
+                            if (in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])) {
+                                $html .= '
+                                <table>
+                                    <tr><td colspan="6" class="section-title">Información de Calidad</td></tr>
+                                    <tr>
+                                        <th>% Humedad</th>
+                                        <th>% Merma Humedad</th>
+                                        <th>Materias Extrañas %</th>
+                                        <th>Tierra %</th>
+                                        <th>Olor %</th>
+                                        <th>Calidad</th>
+                                    </tr>
+                                    <tr>
+                                        <td>' . number_format($record->humedad, 2, ',', '.') . '%</td>
+                                        <td>' . number_format($mermaHumedad, 2, ',', '.') . '%</td>
+                                        <td>' . number_format($record->materiasExtranas ?? 0, 2, ',', '.') . '%</td>
+                                        <td>' . number_format($record->tierra ?? 0, 2, ',', '.') . '%</td>
+                                        <td>' . number_format($record->olor ?? 0, 2, ',', '.') . '%</td>
+                                        <td>' . ucfirst($record->calidad) . '</td>
+                                    </tr>
+                                </table>
+                                <table>
+                                    <tr><td colspan="4" class="section-title">Información Adicional</td></tr>
+                                    <tr>
+                                        <th>Granos Dañados</th>
+                                        <th>Granos Quebrados</th>
+                                        <th>Destino</th>
+                                        <th>Peso Neto con Mermas</th>
+                                    </tr>
+                                    <tr>
+                                        <td>' . ($record->granosRotos ? 'Sí' : 'No') . '</td>
+                                        <td>' . ($record->granosQuebrados ? 'Sí' : 'No') . '</td>
+                                        <td>' . ($record->destino == 'plantaSilo' ? 'Planta de Silo' : 'Silo Bolsa') . '</td>
+                                        <td>' . number_format($pesoNetoHumedad, 0, ',', '.') . ' Kg</td>
+                                    </tr>
+                                </table>';
+                            }
+
+                            $html .= '
+                            <table>
+                                <tr><td colspan="2" class="section-title">Observaciones y Estado</td></tr>
+                                <tr>
+                                    <th>Observaciones</th>
+                                    <th>Estado</th>
+                                </tr>
+                                <tr>
+                                    <td>' . ($record->observaciones ?? '-') . '</td>
+                                    <td>' . ($record->confirmado ? 'Confirmado' : 'Pendiente') . '</td>
+                                </tr>
+                            </table>';
+
+                            if($i == 0)
+                                $html .= '<br><hr /><br>';
+                        }
+
+                        $pdf = app('dompdf.wrapper');
+                        $pdf->loadHTML($html)->setPaper('A4', 'portrait');
+                        $filename = 'Detalle_Ingreso_Insumos_Paihuen_' . now()->format('Ymd_His') . '.pdf';
+                        return response()->streamDownload(function () use ($pdf) {
+                            echo $pdf->stream();
+                        }, $filename);
+                    })
+                    ->visible(fn ($record) => $record !== null),
+                
                 Tables\Actions\DeleteAction::make()
                 ->label('')
                 ->color('danger'),
