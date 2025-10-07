@@ -774,15 +774,21 @@ class PaihuenCerealesResource extends Resource
 
                         $html = '
                         <style>
-                            body { font-family: DejaVu Sans, sans-serif; font-size: 10px; }
+                            body { font-family: DejaVu Sans, sans-serif; font-size: 12px; }
                             h2 { margin-bottom: 10px; }
-                            table { border-collapse: collapse; width: 100%; margin-bottom: 8px;}
-                            th, td { border: 1px solid #ccc; padding: 4px 8px; }
+                            table { border-collapse: collapse; width: 100%; margin-bottom: 15px;}
+                            th, td { border: 1px solid #ccc; padding: 6px 8px; }
                             th { background: #f2f2f2; }
                             .section-title { background: #e9ecef; font-weight: bold; padding: 4px 8px; }
                         </style>';
+                
 
                         for ($i=0; $i < 2; $i++) { 
+
+                                
+                            if($record->cereal == 'Maiz' && $i == 1){
+                                $html .= '<div style="page-break-after: always;"></div>';
+                            }        
 
                             $html .= '
                             <table width="100%" border="0" cellpadding="5" cellspacing="0" style="margin-bottom:20px;">
