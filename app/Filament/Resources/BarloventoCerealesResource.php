@@ -317,16 +317,6 @@ class BarloventoCerealesResource extends Resource
 
                                 $mermaManipuleo = 0;
 
-                                if($record->humedad > 14.5) {
-                                
-                                    $mermaHumedad = DB::table('merma_humedad')
-                                    ->where('cereal', $record->cereal)
-                                    ->where('humedad', $record->humedad)
-                                    ->value('merma');
-                                
-                                    $mermaManipuleo = $manipuleo[$record->cereal] ?? 0;
-                                }
-
                                 $manipuleo = [
                                     "Maiz"=>0.25,
                                     "Sorgo"=>0.25,   
@@ -340,12 +330,24 @@ class BarloventoCerealesResource extends Resource
                                     "Arroz"=>0.13,
                                     "Mijo"=>0.25];
 
+                                if($record->humedad > 14.5) {
+                                
+                                    $mermaHumedad = DB::table('merma_humedad')
+                                    ->where('cereal', $record->cereal)
+                                    ->where('humedad', $record->humedad)
+                                    ->value('merma');
+                                
+                                    $mermaManipuleo = $manipuleo[$record->cereal] ?? 0;
+                                }
+
+
+
                                 $pesoNeto = $record->pesoBruto - $record->pesoTara;
                                 $mermaMaterias = ($record->materiasExtranas > 1.5) ? $record->materiasExtranas - 1.5 : 0;
                                 $merma = $mermaHumedad + $mermaManipuleo + $mermaMaterias + $record->tierra + $record->olor;
                                 $resultado = ($pesoNeto - ($pesoNeto * ($merma / 100)));
 
-                                return number_format($resultado,0,',','.') . ' Kg';
+                                return number_format($resultado,1,',','.') . ' Kg';
                             })
                             ->visible(fn ($record) => in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])),
                         TextEntry::make('granosRotos')
