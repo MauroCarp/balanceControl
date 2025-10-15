@@ -157,7 +157,7 @@ class BarloventoIngresosResource extends Resource
                                                 ->id('origen_distancia')
                                                 ->maxLength(191),
                                             Forms\Components\Select::make('origen_desbaste')
-                                                ->options([2=>2,3=>3,4=>4,5=>5])
+                                                ->options([0=>0,1=>1,2=>2,3=>3,4=>4,5=>5])
                                                 ->label('% Desbaste Comercial')
                                                 ->required()
                                                 ->id('origen_desbaste')
