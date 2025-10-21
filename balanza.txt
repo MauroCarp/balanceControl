@@ -1,0 +1,27 @@
+
+P.5-Auto Apagado
+Esta función permite ahorrar energía cuando el equipo se alimenta a batería como el caso de balanzas de grúa o zorras. El display se apaga si el peso está en equilibrio durante el tiempo programado y se activa nuevamente al pulsar una tecla o si hay una variación en el peso. En el caso de seleccionar la aplicación "si-no" en P.1 la tecla * fuerza el apagado del display o lo enciende en forma permanente.
+• no	Nunca se apaga.
+15”...10’	Selección del tiempo de auto apagado
+Nota: Solamente se apaga el display para ahorrar energía, el consumo típico apagado es 30 mA incluyendo una celda de carga de 350 ohm.
+P.6-Velocidad de transmisión por RS232C
+• 1200...9600 baud
+Nota: Este item no aparece en el menú si la aplicación elegida en P.I no usa la interface RS232C (4-20 mA/0-20 mA/Corte).
+P.7-N Bits/Paridad de la interface RS232C
+.8n	8 bit sin paridad
+• 7e	7 bit paridad par
+• 7º	7 bit paridad impar
+Nota: Este item no aparece en el menú si la aplicación elegida en P.1 no usa la interface RS232C (4-20 mA/0-20 mA/Corte).
+P.8-Selección del formato de datos de la interface RS232C
+Formatos de salida a computadora:
+1. "e105"	<estatus><peso><CR>
+<estatus>	1 byte:
+7 6 5 4 3 2 1 0	N° de bit
+0 1 0 . . . . X	0 = Peso Bruto / 1 = Peso Neto
+0 1 0 . . . X .	1=Centro de Cero +- 1/4 división
+0 1 0 . . X . .	0 = Peso en movimiento / 1 = Peso en Equilibrio
+0 1 0 . X . . .	0 = Peso positivo / 1 = Peso negativo
+0 1 0 X . . . . 	0= funcionamiento normal / 1 = Fuera de Rango
+<peso>:		6 caracteres sin punto decimal, con ceros a la izquierda
+<CR>:		0Dh
+Indicador de Peso EL05B

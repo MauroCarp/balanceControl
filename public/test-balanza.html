@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Balanza Digital</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .config-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .config-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .result-box {
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .result-box.success {
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result-box.error {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result-box.loading {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .peso-display {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #333;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .status-item {
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        .status-label {
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 Prueba de Balanza Digital</h1>
+        <p class="subtitle">Sistema de Control - Balanza EL05B</p>
+        
+        <div class="config-section">
+            <h3>⚙️ Configuración</h3>
+            
+            <div class="input-group">
+                <label for="puerto">Puerto COM</label>
+                <select id="puerto">
+                    <option value="COM1">COM1</option>
+                    <option value="COM2">COM2</option>
+                    <option value="COM3">COM3</option>
+                    <option value="COM4">COM4</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label for="baudRate">Velocidad (Baud Rate)</label>
+                <select id="baudRate">
+                    <option value="1200">1200</option>
+                    <option value="2400">2400</option>
+                    <option value="4800">4800</option>
+                    <option value="9600" selected>9600</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" onclick="probarConexion()">
+                🔌 Probar Conexión
+            </button>
+            <button class="btn-secondary" onclick="leerPeso()">
+                📊 Leer Peso
+            </button>
+        </div>
+        
+        <button class="btn-primary" onclick="leerPesoEstable()" style="width: 100%;">
+            ⚖️ Leer Peso Estable
+        </button>
+        
+        <div id="resultado" class="result-box"></div>
+    </div>
+    
+    <script>
+        const API_BASE = '/api/balanza';
+        
+        function getConfig() {
+            return {
+                puerto: document.getElementById('puerto').value,
+                baud_rate: document.getElementById('baudRate').value
+            };
+        }
+        
+        function mostrarResultado(tipo, contenido) {
+            const resultBox = document.getElementById('resultado');
+            resultBox.className = `result-box ${tipo}`;
+            resultBox.innerHTML = contenido;
+            resultBox.style.display = 'block';
+        }
+        
+        function mostrarCargando(mensaje) {
+            mostrarResultado('loading', `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="spinner"></div>
+                    <span>${mensaje}</span>
+                </div>
+            `);
+        }
+        
+        function mostrarPeso(data) {
+            const estatus = data.estatus;
+            const iconoTipo = estatus.tipo_peso === 'neto' ? '⚖️' : '📦';
+            const iconoEquilibrio = estatus.equilibrio ? '✅' : '⚠️';
+            const iconoValido = data.valido ? '✅' : '❌';
+            
+            mostrarResultado('success', `
+                <div class="peso-display">
+                    ${iconoTipo} ${data.peso_formateado} kg
+                </div>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-label">Tipo de Peso:</div>
+                        ${estatus.tipo_peso === 'neto' ? 'Neto' : 'Bruto'}
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Estado:</div>
+                        ${iconoEquilibrio} ${estatus.equilibrio ? 'Equilibrio' : 'En movimiento'}
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Centro de Cero:</div>
+                        ${estatus.centro_cero ? 'Sí' : 'No'}
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Válido:</div>
+                        ${iconoValido} ${data.valido ? 'Sí' : 'No'}
+                    </div>
+                </div>
+            `);
+        }
+        
+        function mostrarError(mensaje) {
+            mostrarResultado('error', `
+                <strong>❌ Error</strong>
+                <p style="margin-top: 10px;">${mensaje}</p>
+            `);
+        }
+        
+        async function probarConexion() {
+            mostrarCargando('Probando conexión con la balanza...');
+            
+            try {
+                const config = getConfig();
+                const params = new URLSearchParams(config);
+                const response = await fetch(`${API_BASE}/probar-conexion?${params}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarPeso(data.data);
+                } else {
+                    mostrarError(data.message || 'No se pudo conectar con la balanza');
+                }
+            } catch (error) {
+                mostrarError(`Error de conexión: ${error.message}`);
+            }
+        }
+        
+        async function leerPeso() {
+            mostrarCargando('Leyendo peso de la balanza...');
+            
+            try {
+                const config = getConfig();
+                const params = new URLSearchParams(config);
+                const response = await fetch(`${API_BASE}/leer-peso?${params}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarPeso(data.data);
+                } else {
+                    mostrarError(data.message || 'Error al leer el peso');
+                }
+            } catch (error) {
+                mostrarError(`Error: ${error.message}`);
+            }
+        }
+        
+        async function leerPesoEstable() {
+            mostrarCargando('Esperando peso estable... (Esto puede tomar unos segundos)');
+            
+            try {
+                const config = getConfig();
+                const params = new URLSearchParams(config);
+                const response = await fetch(`${API_BASE}/leer-peso-estable?${params}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarPeso(data.data);
+                } else {
+                    mostrarError(data.message || 'No se pudo obtener un peso estable');
+                }
+            } catch (error) {
+                mostrarError(`Error: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>
