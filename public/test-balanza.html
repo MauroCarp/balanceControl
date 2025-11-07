@@ -1,68 +1,133 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prueba de Balanza Digital</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
+<!DOCTYPE html><!DOCTYPE html>
+
+<html lang="es"><html lang="es">
+
+<head><head>
+
+    <meta charset="UTF-8">    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Test Balanza</title>    <title>Prueba de Balanza Digital</title>
+
+    <style>    <style>
+
+        body { font-family: Arial; max-width: 800px; margin: 50px auto; padding: 20px; }        * {
+
+        .peso-display { font-size: 72px; color: #16a34a; font-weight: bold; text-align: center; margin: 30px 0; }            margin: 0;
+
+        button { background: #16a34a; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; }            padding: 0;
+
+        button:hover { background: #15803d; }            box-sizing: border-box;
+
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }        }
+
+        .success { background: #d1fae5; color: #065f46; }        
+
+        .error { background: #fee2e2; color: #991b1b; }        body {
+
+        .info { background: #dbeafe; color: #1e40af; }            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+    </style>            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+</head>            min-height: 100vh;
+
+<body>            display: flex;
+
+    <h1>🎯 Test de Balanza Digital</h1>            align-items: center;
+
+                justify-content: center;
+
+    <div id="status" class="status info">            padding: 20px;
+
+        Presiona el botón para leer el peso        }
+
+    </div>        
+
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+
+    <div class="peso-display" id="peso">            background: white;
+
+        -- kg            border-radius: 20px;
+
+    </div>            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+
             padding: 40px;
-            max-width: 600px;
+
+    <button onclick="leerPeso()">📊 Leer Balanza</button>            max-width: 600px;
+
             width: 100%;
-        }
-        
+
+    <h3>Datos Técnicos:</h3>        }
+
+    <pre id="datos"></pre>        
+
         h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-        
+
+    <script>            color: #333;
+
+        async function leerPeso() {            margin-bottom: 10px;
+
+            const status = document.getElementById('status');            font-size: 28px;
+
+            const peso = document.getElementById('peso');        }
+
+            const datos = document.getElementById('datos');        
+
         .subtitle {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 14px;
+
+            status.className = 'status info';            color: #666;
+
+            status.textContent = 'Leyendo balanza...';            margin-bottom: 30px;
+
+            peso.textContent = '⏳';            font-size: 14px;
+
         }
-        
-        .config-section {
-            background: #f8f9fa;
+
+            try {        
+
+                const response = await fetch('/api/balanza/leer-peso');        .config-section {
+
+                const data = await response.json();            background: #f8f9fa;
+
             border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .config-section h3 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-        
-        .input-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            color: #555;
-            margin-bottom: 5px;
+
+                if (data.success) {            padding: 20px;
+
+                    status.className = 'status success';            margin-bottom: 20px;
+
+                    status.textContent = '✅ Lectura exitosa' + (data.estable ? ' (estable)' : ' (inestable)');        }
+
+                    peso.textContent = data.peso + ' ' + data.unidad;        
+
+                    datos.textContent = JSON.stringify(data, null, 2);        .config-section h3 {
+
+                } else {            color: #333;
+
+                    throw new Error(data.error);            margin-bottom: 15px;
+
+                }            font-size: 16px;
+
+            } catch (error) {        }
+
+                status.className = 'status error';        
+
+                status.textContent = '❌ Error: ' + error.message;        .input-group {
+
+                peso.textContent = 'ERROR';            margin-bottom: 15px;
+
+                datos.textContent = error.message;        }
+
+            }        
+
+        }        label {
+
+    </script>            display: block;
+
+</body>            color: #555;
+
+</html>            margin-bottom: 5px;
+
             font-size: 14px;
             font-weight: 500;
         }
@@ -198,6 +263,12 @@
         <h1>🔬 Prueba de Balanza Digital</h1>
         <p class="subtitle">Sistema de Control - Balanza EL05B</p>
         
+        <!-- Indicador de entorno -->
+        <div style="background: #e3f2fd; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 12px;">
+            <strong>🌐 Entorno:</strong> <span id="environmentInfo"></span><br>
+            <strong>📡 API Base:</strong> <span id="apiBaseInfo"></span>
+        </div>
+        
         <div class="config-section">
             <h3>⚙️ Configuración</h3>
             
@@ -239,7 +310,35 @@
     </div>
     
     <script>
-        const API_BASE = '/api/balanza';
+        // Detectar automáticamente la ruta base de la aplicación
+        // Para producción (https://balanza.barloventosrl.website) y desarrollo local
+        const currentPath = window.location.pathname;
+        const publicIndex = currentPath.indexOf('/public');
+        
+        // Si estamos en producción (sin /public en la URL)
+        let API_BASE;
+        if (window.location.hostname === 'balanza.barloventosrl.website' || !currentPath.includes('/public')) {
+            API_BASE = '/api/balanza';
+        } else {
+            // Para desarrollo local con /public
+            const basePath = publicIndex !== -1 ? currentPath.substring(0, publicIndex + 7) : '';
+            API_BASE = basePath + '/api/balanza';
+        }
+        
+        console.log('🔧 Ruta API configurada:', API_BASE);
+        console.log('🌐 Hostname:', window.location.hostname);
+        console.log('📍 Path:', currentPath);
+        
+        // Actualizar la UI con la información del entorno
+        document.addEventListener('DOMContentLoaded', function() {
+            const isProduction = window.location.hostname === 'balanza.barloventosrl.website';
+            const envInfo = isProduction ? 
+                '🟢 Producción (balanza.barloventosrl.website)' : 
+                '🔵 Desarrollo Local';
+            
+            document.getElementById('environmentInfo').textContent = envInfo;
+            document.getElementById('apiBaseInfo').textContent = API_BASE;
+        });
         
         function getConfig() {
             return {
@@ -308,7 +407,23 @@
             try {
                 const config = getConfig();
                 const params = new URLSearchParams(config);
-                const response = await fetch(`${API_BASE}/probar-conexion?${params}`);
+                const url = `${API_BASE}/probar-conexion?${params}`;
+                
+                console.log('📡 Intentando conectar a:', url);
+                
+                const response = await fetch(url);
+                
+                console.log('📥 Respuesta recibida:', response.status, response.statusText);
+                console.log('📄 Content-Type:', response.headers.get('content-type'));
+                
+                // Verificar si la respuesta es JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const textResponse = await response.text();
+                    console.error('❌ Respuesta no es JSON:', textResponse.substring(0, 500));
+                    throw new Error(`El servidor respondió con HTML en lugar de JSON. Verifica que la ruta de la API sea correcta. URL usada: ${url}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
@@ -317,6 +432,7 @@
                     mostrarError(data.message || 'No se pudo conectar con la balanza');
                 }
             } catch (error) {
+                console.error('💥 Error completo:', error);
                 mostrarError(`Error de conexión: ${error.message}`);
             }
         }

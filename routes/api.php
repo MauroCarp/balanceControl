@@ -21,6 +21,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // Rutas para la balanza digital
 Route::prefix('balanza')->group(function () {
     Route::get('/leer-peso', [App\Http\Controllers\BalanzaController::class, 'leerPeso']);
-    Route::get('/leer-peso-estable', [App\Http\Controllers\BalanzaController::class, 'leerPesoEstable']);
-    Route::get('/probar-conexion', [App\Http\Controllers\BalanzaController::class, 'probarConexion']);
 });
