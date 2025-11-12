@@ -18,5 +18,8 @@ return [
 
     // Puerto COM en tu PC local
     'puerto' => env('BALANZA_PUERTO', 'COM1'),
+    
+    'python_url' => env('BALANZA_PYTHON_URL', 'https://EXAMPLE/read'),
+
 
 ];

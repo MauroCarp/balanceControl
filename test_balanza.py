@@ -232,3 +232,10 @@ if __name__ == "__main__":
     # Obtener y mostrar el JSON
     json_resultado = get_weight_json(PORT, BAUD_RATE)
     print(json_resultado)
+    
+    # Guardar en archivo JSON
+    nombre_archivo = f'lectura_balanza.txt'
+    with open(nombre_archivo, 'w', encoding='utf-8') as f:
+        f.write(json_resultado)
+    
+    print(f"\n✅ Datos guardados en: {nombre_archivo}")
