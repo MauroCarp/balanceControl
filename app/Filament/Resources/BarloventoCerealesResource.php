@@ -117,9 +117,9 @@ class BarloventoCerealesResource extends Resource
                                 Forms\Components\Select::make('calidad')
                                     ->label('Calidad')
                                     ->options([
-                                        'mala' => 'Mala',
-                                        'buena' => 'Buena',
-                                        'muyBuena' => 'Muy Buena',
+                                        'bueno' => 'Bueno',
+                                        'regular' => 'Regular',
+                                        'malo' => 'Malo',
                                     ])
                                     ->required(),
                             ])->visible(fn ($get) => in_array($get('cereal'), ['Maiz', 'Soja', 'Cascara de mani'])),
@@ -753,26 +753,56 @@ class BarloventoCerealesResource extends Resource
                     ->color('primary')
                     ->action(function ($record) {
                         $insumo = \App\Models\Insumos::where('insumo', $record->cereal)->first();
-                        $pesoNeto = $record->pesoBruto - $record->pesoTara;
                         
+                        $manipuleo = [
+                                    "Maiz"=>0.25,
+                                    "Sorgo"=>0.25,   
+                                    "Trigo"=>0.10,
+                                    "Cebada"=>0.20,
+                                    "Avena"=>0.20,
+                                    "Soja"=>0.25,
+                                    "Girasol"=>0.20,
+                                    "Centeno"=>0.20,
+                                    "Triticale"=>0.5,
+                                    "Arroz"=>0.13,
+                                    "Mijo"=>0.25];
+
+                        $mermaManipuleo = 0;
+
                         // Cálculos específicos para cereales
                         $mermaHumedad = 0;
-                        $pesoNetoHumedad = $pesoNeto;
+                        // $pesoNetoHumedad = $pesoNeto;
                         
-                        if (in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])) {
-                            // Calcular merma de humedad según el cereal
-                            if ($record->cereal == 'Maiz' && $record->humedad > 14.5) {
-                                $mermaHumedad = ($record->humedad - 14.5) * 1.3;
-                            } elseif ($record->cereal == 'Soja' && $record->humedad > 13.5) {
-                                $mermaHumedad = ($record->humedad - 13.5) * 1.2;
-                            } elseif ($record->cereal == 'Cascara de mani' && $record->humedad > 8) {
-                                $mermaHumedad = ($record->humedad - 8) * 1.0;
-                            }
+                        // if (in_array($record->cereal, ['Maiz', 'Soja', 'Cascara de mani'])) {
+                        //     // Calcular merma de humedad según el cereal
+                        //     if ($record->cereal == 'Maiz' && $record->humedad > 14.5) {
+                        //         $mermaHumedad = ($record->humedad - 14.5) * 1.3;
+                        //     } elseif ($record->cereal == 'Soja' && $record->humedad > 13.5) {
+                        //         $mermaHumedad = ($record->humedad - 13.5) * 1.2;
+                        //     } elseif ($record->cereal == 'Cascara de mani' && $record->humedad > 8) {
+                        //         $mermaHumedad = ($record->humedad - 8) * 1.0;
+                        //     }
                             
-                            // Calcular peso neto con mermas
-                            $totalMermas = $mermaHumedad + ($record->materiasExtranas ?? 0) + ($record->tierra ?? 0) + ($record->olor ?? 0);
-                            $pesoNetoHumedad = $pesoNeto - (($pesoNeto * $totalMermas) / 100);
+                        //     // Calcular peso neto con mermas
+                        //     $totalMermas = $mermaHumedad + ($record->materiasExtranas ?? 0) + ($record->tierra ?? 0) + ($record->olor ?? 0);
+                        //     $pesoNetoHumedad = $pesoNeto - (($pesoNeto * $totalMermas) / 100);
+                        // }
+
+                        if($record->humedad > 14.5) {
+                            
+                            $mermaHumedad = DB::table('merma_humedad')
+                            ->where('cereal', $record->cereal)
+                            ->where('humedad', $record->humedad)
+                            ->value('merma');
+                        
+                            $mermaManipuleo = $manipuleo[$record->cereal] ?? 0;
                         }
+
+                        $pesoNeto = $record->pesoBruto - $record->pesoTara;
+                        $mermaMaterias = ($record->materiasExtranas > 1.5) ? $record->materiasExtranas - 1.5 : 0;
+                        $merma = $mermaHumedad + $mermaManipuleo + $mermaMaterias + $record->tierra + $record->olor;
+                        $pesoNetoMermas = ($pesoNeto - ($pesoNeto * ($merma / 100)));
+
 
                         $html = '
                         <style>
@@ -871,7 +901,7 @@ class BarloventoCerealesResource extends Resource
                                         <td>' . ($record->granosRotos ? 'Sí' : 'No') . '</td>
                                         <td>' . ($record->granosQuebrados ? 'Sí' : 'No') . '</td>
                                         <td>' . ($record->destino == 'plantaSilo' ? 'Planta de Silo' : 'Silo Bolsa') . '</td>
-                                        <td>' . number_format($pesoNetoHumedad, 0, ',', '.') . ' Kg</td>
+                                        <td>' . number_format($pesoNetoMermas, 1, ',', '.') . ' Kg</td>
                                     </tr>
                                 </table>';
                             }

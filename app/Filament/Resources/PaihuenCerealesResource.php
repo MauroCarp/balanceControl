@@ -118,9 +118,9 @@ class PaihuenCerealesResource extends Resource
                                 Forms\Components\Select::make('calidad')
                                     ->label('Calidad')
                                     ->options([
-                                        'mala' => 'Mala',
-                                        'buena' => 'Buena',
-                                        'muyBuena' => 'Muy Buena',
+                                        'bueno' => 'Bueno',
+                                        'regula' => 'Regula',
+                                        'malo' => 'Malo',
                                     ])
                                     ->required(),
                             ])->visible(fn ($get) => in_array($get('cereal'), ['Maiz', 'Soja', 'Cascara de mani'])),
