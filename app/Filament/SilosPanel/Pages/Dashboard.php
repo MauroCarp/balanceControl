@@ -17,11 +17,12 @@ class Dashboard extends BaseDashboard
     public function getWidgets(): array
     {
         return [
+            MapaSilosWidget::class,
             SilosStatsOverview::class,
             CapacidadSilosChart::class,
             AjusteStockCeroWidget::class,
-            MapaSilosWidget::class,
             DetalleSilosWidget::class,
         ];
     }
+
 }

@@ -9,6 +9,10 @@ class SilosStatsOverview extends StatsOverviewWidget
 {
     protected static ?string $heading = 'Indicadores de Silos';
 
+    // protected int|string|array $columnSpan = 'half';
+    protected static ?int $sort = 1;
+    protected static bool $isLazy = false;
+
     protected function getCards(): array
     {
         return [

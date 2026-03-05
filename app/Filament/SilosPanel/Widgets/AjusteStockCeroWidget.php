@@ -16,6 +16,10 @@ class AjusteStockCeroWidget extends Widget implements HasForms
 
     public ?string $silo = null;
 
+    protected int|string|array $columnSpan = 'full';
+    protected static ?int $sort = 3;
+    protected static bool $isLazy = false;
+
     public function mount(): void
     {
         $this->form->fill();

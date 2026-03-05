@@ -8,6 +8,10 @@ class DetalleSilosWidget extends Widget
 {
     protected static string $view = 'filament.silos-panel.widgets.detalle-silos-widget';
 
+    protected int|string|array $columnSpan = 'full';
+    protected static ?int $sort = 5;
+    protected static bool $isLazy = false;
+
     protected function getViewData(): array
     {
         return [

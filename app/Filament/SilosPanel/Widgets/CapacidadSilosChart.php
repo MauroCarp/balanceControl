@@ -8,6 +8,10 @@ class CapacidadSilosChart extends ChartWidget
 {
     protected static ?string $heading = 'Capacidad de Silos';
 
+    protected int|string|array $columnSpan = 'half';
+    protected static ?int $sort = 2;
+    protected static bool $isLazy = false;
+
     protected function getData(): array
     {
         $labels = ['Silo 1', 'Silo 2', 'Silo 3'];
