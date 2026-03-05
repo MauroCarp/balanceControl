@@ -19,6 +19,16 @@
             PAIHUEN
             </x-filament::button>
         </div>
+        <br>
+        <div class="grid grid-cols-1 md:grid-cols-1 gap-1">
+            <x-filament::button tag="a" 
+            href="/silos" 
+            id="btnSilos"
+            class="w-full" style="font-size:4em;padding: 1em 2em;">
+            SILOS
+            </x-filament::button>
+        </div>
+
     </div>
     <div class="p-4 hidden" id="btnsBarlovento">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
