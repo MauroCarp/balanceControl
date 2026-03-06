@@ -16,4 +16,10 @@ class ListProyeccions extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+        public function getTitle(): string
+    {
+        return ' '; // Cambia este texto al título deseado
+
+    }
 }

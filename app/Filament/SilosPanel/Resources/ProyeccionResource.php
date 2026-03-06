@@ -14,7 +14,8 @@ class ProyeccionResource extends Resource
 {
     protected static ?string $model = Proyeccion::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-arrows-pointing-out';
+    protected static ?string $navigationLabel = 'Proyecciones'; // Nombre del 
 
     public static function form(Form $form): Form
     {

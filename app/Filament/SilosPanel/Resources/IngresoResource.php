@@ -14,7 +14,7 @@ class IngresoResource extends Resource
 {
     protected static ?string $model = Ingreso::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-arrow-left-end-on-rectangle';
 
     public static function form(Form $form): Form
     {
