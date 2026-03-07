@@ -12,6 +12,8 @@ class CapacidadSilosChart extends ChartWidget
     protected static ?int $sort = 2;
     protected static bool $isLazy = false;
 
+    protected $listeners = ['silo-stock-actualizado' => '$refresh'];
+
     protected function getData(): array
     {
         $silos = \App\Models\Silo::orderBy('nombre')->get();

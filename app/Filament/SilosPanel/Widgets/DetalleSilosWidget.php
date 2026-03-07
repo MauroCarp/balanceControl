@@ -22,6 +22,7 @@ class DetalleSilosWidget extends Widget
         return [
             'rows' => $silos->map(fn (Silo $s) => [
                 'silo'      => $s->nombre,
+                'cereal'    => $s->cereal ?? '—',
                 'stock'     => $s->stock_actual_kg,
                 'humedad'   => $s->humedad ?? 0,
                 'capacidad' => $s->capacidad_kg,
