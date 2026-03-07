@@ -2,6 +2,7 @@
 
 namespace App\Filament\SilosPanel\Widgets;
 
+use App\Models\Silo;
 use Filament\Widgets\Widget;
 
 class DetalleSilosWidget extends Widget
@@ -12,15 +13,27 @@ class DetalleSilosWidget extends Widget
     protected static ?int $sort = 5;
     protected static bool $isLazy = false;
 
+    protected $listeners = ['silo-stock-actualizado' => '$refresh'];
+
     protected function getViewData(): array
     {
+        $silos = Silo::orderBy('nombre')->get();
+
         return [
-            'rows' => [
-                ['silo' => 'Silo 1', 'stock' => 60000, 'humedad' => 12.5, 'capacidad' => 100000, 'disponible' => 40000, 'estado' => 'Activo'],
-                ['silo' => 'Silo 2', 'stock' => 110000, 'humedad' => 11.2, 'capacidad' => 120000, 'disponible' => 10000, 'estado' => 'Lleno'],
-                ['silo' => 'Silo 3', 'stock' => 30000, 'humedad' => 13.0, 'capacidad' => 80000, 'disponible' => 50000, 'estado' => 'Por llenarse'],
-                ['silo' => 'Silo 4', 'stock' => 0, 'humedad' => 0, 'capacidad' => 90000, 'disponible' => 90000, 'estado' => 'En reparacion'],
-            ],
+            'rows' => $silos->map(fn (Silo $s) => [
+                'silo'      => $s->nombre,
+                'stock'     => $s->stock_actual_kg,
+                'humedad'   => $s->humedad ?? 0,
+                'capacidad' => $s->capacidad_kg,
+                'disponible'=> $s->kg_disponibles,
+                'estado'    => match ($s->estado) {
+                    'activo'        => 'Activo',
+                    'vacio'         => 'Vacío',
+                    'lleno'         => 'Lleno',
+                    'en_reparacion' => 'En reparación',
+                    default         => ucfirst($s->estado),
+                },
+            ])->toArray(),
         ];
     }
 }

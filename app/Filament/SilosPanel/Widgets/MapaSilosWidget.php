@@ -2,6 +2,7 @@
 
 namespace App\Filament\SilosPanel\Widgets;
 
+use App\Models\Silo;
 use Filament\Widgets\Widget;
 
 class MapaSilosWidget extends Widget
@@ -10,16 +11,19 @@ class MapaSilosWidget extends Widget
 
     protected int|string|array $columnSpan = 'full';
     protected static bool $isLazy = false;
-    
+
     protected function getViewData(): array
     {
+        $silos = Silo::orderBy('nombre')->get();
+
         return [
-            'silos' => [
-                ['nombre' => 'Silo 1', 'capacidad' => 100, 'disponible' => 40, 'cultivo' => 'Maiz', 'estado' => 'activo'],
-                ['nombre' => 'Silo 2', 'capacidad' => 120, 'disponible' => 10, 'cultivo' => 'Soja', 'estado' => 'lleno'],
-                ['nombre' => 'Silo 3', 'capacidad' => 80, 'disponible' => 50, 'cultivo' => 'Maiz', 'estado' => 'por_llenarse'],
-                ['nombre' => 'Silo 4', 'capacidad' => 90, 'disponible' => 90, 'cultivo' => 'Soja', 'estado' => 'reparacion'],
-            ],
+            'silos' => $silos->map(fn (Silo $s) => [
+                'nombre'    => $s->nombre,
+                'capacidad' => round($s->capacidad_kg / 1000, 1),
+                'disponible'=> round($s->kg_disponibles / 1000, 1),
+                'cultivo'   => $s->cereal ?? 'Sin dato',
+                'estado'    => $s->estado,
+            ])->toArray(),
         ];
     }
 }

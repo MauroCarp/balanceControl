@@ -14,25 +14,22 @@ class CapacidadSilosChart extends ChartWidget
 
     protected function getData(): array
     {
-        $labels = ['Silo 1', 'Silo 2', 'Silo 3'];
-
-        $maximos = [100, 120, 80];
-        $actuales = [60, 90, 40];
+        $silos = \App\Models\Silo::orderBy('nombre')->get();
 
         return [
             'datasets' => [
                 [
-                    'label' => 'Capacidad maxima (tn)',
-                    'data' => $maximos,
+                    'label'           => 'Capacidad máxima (tn)',
+                    'data'            => $silos->map(fn ($s) => round($s->capacidad_kg / 1000, 1))->toArray(),
                     'backgroundColor' => 'rgba(59, 130, 246, 0.6)',
                 ],
                 [
-                    'label' => 'Stock actual (tn)',
-                    'data' => $actuales,
+                    'label'           => 'Stock actual (tn)',
+                    'data'            => $silos->map(fn ($s) => round($s->stock_actual_kg / 1000, 1))->toArray(),
                     'backgroundColor' => 'rgba(16, 185, 129, 0.6)',
                 ],
             ],
-            'labels' => $labels,
+            'labels' => $silos->pluck('nombre')->toArray(),
         ];
     }
 

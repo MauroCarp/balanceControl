@@ -2,7 +2,8 @@
 
 namespace App\Filament\SilosPanel\Widgets;
 
-use Filament\Forms; 
+use App\Models\Silo;
+use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
@@ -14,7 +15,7 @@ class AjusteStockCeroWidget extends Widget implements HasForms
 
     protected static string $view = 'filament.silos-panel.widgets.ajuste-stock-cero-widget';
 
-    public ?string $silo = null;
+    public ?int $silo = null;
 
     protected int|string|array $columnSpan = 'full';
     protected static ?int $sort = 3;
@@ -31,11 +32,7 @@ class AjusteStockCeroWidget extends Widget implements HasForms
             Forms\Components\Select::make('silo')
                 ->label('Silo')
                 ->placeholder('Selecciona un silo')
-                ->options([
-                    'silo_1' => 'Silo 1',
-                    'silo_2' => 'Silo 2',
-                    'silo_3' => 'Silo 3',
-                ])
+                ->options(Silo::orderBy('nombre')->pluck('nombre', 'id'))
                 ->searchable()
                 ->required(),
         ];
@@ -43,10 +40,30 @@ class AjusteStockCeroWidget extends Widget implements HasForms
 
     public function ajustar(): void
     {
+        $this->form->validate();
+
+        $silo = Silo::find($this->silo);
+
+        if (! $silo) {
+            Notification::make()
+                ->title('Error')
+                ->body('Silo no encontrado.')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        $silo->update(['stock_actual_kg' => 0]);
+
         Notification::make()
-            ->title('Ajuste de stock')
-            ->body('Implementar logica para ajustar el silo seleccionado a cero.')
+            ->title('Stock ajustado')
+            ->body("El stock de {$silo->nombre} fue ajustado a cero.")
             ->success()
             ->send();
+
+        $this->silo = null;
+        $this->form->fill();
+
+        $this->dispatch('silo-stock-actualizado');
     }
 }

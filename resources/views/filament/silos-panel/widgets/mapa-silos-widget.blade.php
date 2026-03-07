@@ -1,9 +1,15 @@
 @php
     $estadoColors = [
-        'reparacion' => 'bg-red-500 text-white',
-        'activo' => 'bg-green-500 text-white',
-        'por_llenarse' => 'bg-yellow-400 text-black',
-        'lleno' => 'bg-blue-500 text-white',
+        'activo'        => 'bg-green-500 text-white',
+        'vacio'         => 'bg-gray-200 text-gray-700',
+        'lleno'         => 'bg-blue-500 text-white',
+        'en_reparacion' => 'bg-red-500 text-white',
+    ];
+    $estadoLabels = [
+        'activo'        => 'Activo',
+        'vacio'         => 'Vacío',
+        'lleno'         => 'Lleno',
+        'en_reparacion' => 'En reparación',
     ];
 @endphp
 
@@ -20,7 +26,7 @@
                     <div class="text-xs">Cap: {{ $silo['capacidad'] }} tn</div>
                     <div class="text-xs">Disp: {{ $silo['disponible'] }} tn</div>
                     <div class="text-xs">Cultivo: {{ $silo['cultivo'] }}</div>
-                    <div class="text-xs">Estado: {{ str_replace('_', ' ', ucfirst($silo['estado'])) }}</div>
+                    <div class="text-xs">Estado: {{ $estadoLabels[$silo['estado']] ?? ucfirst($silo['estado']) }}</div>
                 </div>
             @endforeach
         </div>
