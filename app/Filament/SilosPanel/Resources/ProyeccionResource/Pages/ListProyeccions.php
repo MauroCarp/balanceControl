@@ -13,7 +13,16 @@ class ListProyeccions extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Nueva Proyección'), // Cambia este texto al deseado
+            
+            Actions\Action::make('exportar_excel')
+                ->label('Exportar Excel')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('success')
+                ->action(function () {
+                    return $this->exportToExcel();
+                }),
         ];
     }
 
@@ -22,4 +31,10 @@ class ListProyeccions extends ListRecords
         return ' '; // Cambia este texto al título deseado
 
     }
+
+        public function getBreadcrumb(): string
+    {
+        return ' '; // Cambia este texto al breadcrumb deseado
+    }
+
 }

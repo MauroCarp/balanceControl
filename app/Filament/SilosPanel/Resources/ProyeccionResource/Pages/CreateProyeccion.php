@@ -14,5 +14,12 @@ class CreateProyeccion extends CreateRecord
         return ' '; // Cambia este texto al título deseado
 
     }
+
+    public function getBreadcrumb(): string
+    {
+        return 'Nueva Proyección'; // Cambia este texto al breadcrumb deseado
+    }
+
+    
     
 }

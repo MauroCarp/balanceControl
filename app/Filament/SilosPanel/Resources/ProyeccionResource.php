@@ -16,6 +16,7 @@ class ProyeccionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-arrows-pointing-out';
     protected static ?string $navigationLabel = 'Proyecciones'; // Nombre del 
+    protected static ?string $breadcrumb = 'Proyecciones'; // Nombre del 
 
     public static function form(Form $form): Form
     {
@@ -25,7 +26,7 @@ class ProyeccionResource extends Resource
                     'maiz' => 'Maiz',
                     'soja' => 'Soja',
                 ])
-                ->inline()
+                // ->inline()
                 ->required(),
             Forms\Components\TextInput::make('consumo_diario_prom')
                 ->label('Consumo diario prom')
@@ -35,7 +36,7 @@ class ProyeccionResource extends Resource
                 ->label('Kg pendientes ingresar')
                 ->numeric()
                 ->required(),
-        ]);
+        ])->columns(3);
     }
 
     public static function table(Table $table): Table
@@ -66,7 +67,7 @@ class ProyeccionResource extends Resource
     {
         return [
             'index' => Pages\ListProyeccions::route('/'),
-            'create' => Pages\CreateProyeccion::route('/create'),
+            // 'create' => Pages\CreateProyeccion::route('/create'),
         ];
     }
 }

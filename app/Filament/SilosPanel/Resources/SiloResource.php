@@ -14,7 +14,7 @@ class SiloResource extends Resource
 {
     protected static ?string $model = Silo::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
+    protected static ?string $navigationIcon = 'heroicon-o-circle-stack';
 
     protected static ?string $navigationLabel = 'Silos';
 

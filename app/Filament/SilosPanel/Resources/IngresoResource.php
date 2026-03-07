@@ -4,6 +4,7 @@ namespace App\Filament\SilosPanel\Resources;
 
 use App\Filament\SilosPanel\Resources\IngresoResource\Pages;
 use App\Models\Ingreso;
+use App\Models\Silo;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -23,10 +24,12 @@ class IngresoResource extends Resource
                 ->required(),
             Forms\Components\Select::make('silo_destino')
                 ->label('Silo destino')
-                ->options([
-                    'silo_1' => 'Silo 1',
-                    'silo_2' => 'Silo 2',
-                ])
+                ->options(
+                    Silo::orderBy('nombre')
+                        ->whereNotIn('estado', ['lleno', 'en_reparacion'])
+                        ->get()
+                        ->mapWithKeys(fn (Silo $s) => [$s->id => 'Silo ' . $s->nombre])
+                )
                 ->required()
                 ->searchable(),
             Forms\Components\TextInput::make('proveedor')
@@ -70,7 +73,7 @@ class IngresoResource extends Resource
     {
         return [
             'index' => Pages\ListIngresos::route('/'),
-            'create' => Pages\CreateIngreso::route('/create'),
+            // 'create' => Pages\CreateIngreso::route('/create'),
         ];
     }
 }

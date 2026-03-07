@@ -19,7 +19,16 @@ class ListIngresos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Nuevo Ingreso'), // Cambia este texto al deseado
+            
+            Actions\Action::make('exportar_excel')
+                ->label('Exportar Excel')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('success')
+                ->action(function () {
+                    return $this->exportToExcel();
+                }),
         ];
     }
 }

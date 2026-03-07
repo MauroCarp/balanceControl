@@ -71,7 +71,7 @@ class MovimientoResource extends Resource
     {
         return [
             'index' => Pages\ListMovimientos::route('/'),
-            'create' => Pages\CreateMovimiento::route('/create'),
+            // 'create' => Pages\CreateMovimiento::route('/create'),
         ];
     }
 }

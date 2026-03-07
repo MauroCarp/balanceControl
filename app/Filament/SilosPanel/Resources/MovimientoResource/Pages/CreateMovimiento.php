@@ -14,4 +14,10 @@ class CreateMovimiento extends CreateRecord
         return ' '; // Cambia este texto al título deseado
 
     }
+
+        public function getBreadcrumb(): string
+    {
+        return 'Nuevo Movimiento'; // Cambia este texto al breadcrumb deseado
+    }
+
 }
