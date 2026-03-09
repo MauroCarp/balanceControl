@@ -22,6 +22,19 @@ class IngresoResource extends Resource
         return $form->schema([
             Forms\Components\DatePicker::make('fecha')
                 ->required(),
+            Forms\Components\Select::make('cultivo')
+                ->label('Cultivo')
+                ->options([
+                   'Maiz' => 'Maíz',
+                   'Trigo' => 'Trigo',
+                   'Soja' => 'Soja',
+                   'Girasol' => 'Girasol',
+                   'Cebada' => 'Cebada',
+                   'Sorgo' => 'Sorgo',
+                ]
+                )
+                ->required()
+                ->searchable(),
             Forms\Components\Select::make('silo_destino')
                 ->label('Silo destino')
                 ->options(
@@ -48,6 +61,7 @@ class IngresoResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('fecha')->date(),
+                Tables\Columns\TextColumn::make('cultivo')->label('Cultivo'),
                 Tables\Columns\TextColumn::make('silo_destino')->label('Silo destino'),
                 Tables\Columns\TextColumn::make('proveedor'),
                 Tables\Columns\TextColumn::make('cantidad'),
