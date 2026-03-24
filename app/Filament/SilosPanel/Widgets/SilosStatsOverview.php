@@ -19,7 +19,9 @@ class SilosStatsOverview extends StatsOverviewWidget
     {
         $stockTotal     = Silo::sum('stock_actual_kg');
         $capacidadTotal = Silo::sum('capacidad_kg');
-        $humedadProm    = Silo::whereNotNull('humedad')->avg('humedad');
+        $humedadProm = \App\Models\Ingreso::whereBetween('updated_at', [now()->subDays(90), now()])
+            ->avg('humedad');
+
         $silosLlenos    = Silo::where('estado', 'lleno')->count();
         $enReparacion   = Silo::where('estado', 'en_reparacion')->count();
 

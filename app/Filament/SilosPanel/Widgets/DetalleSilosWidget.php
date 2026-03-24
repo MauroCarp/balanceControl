@@ -2,6 +2,7 @@
 
 namespace App\Filament\SilosPanel\Widgets;
 
+use App\Models\Ingreso;
 use App\Models\Silo;
 use Filament\Widgets\Widget;
 
@@ -19,22 +20,32 @@ class DetalleSilosWidget extends Widget
     {
         $silos = Silo::orderBy('nombre')->get();
 
+        $ninetyDaysAgo = now()->subDays(90);
+
         return [
-            'rows' => $silos->map(fn (Silo $s) => [
-                'silo'      => $s->nombre,
-                'cereal'    => $s->cereal ?? '—',
-                'stock'     => $s->stock_actual_kg,
-                'humedad'   => $s->humedad ?? 0,
-                'capacidad' => $s->capacidad_kg,
-                'disponible'=> $s->kg_disponibles,
-                'estado'    => match ($s->estado) {
-                    'activo'        => 'Activo',
-                    'vacio'         => 'Vacío',
-                    'lleno'         => 'Lleno',
-                    'en_reparacion' => 'En reparación',
-                    default         => ucfirst($s->estado),
-                },
-            ])->toArray(),
+            'rows' => $silos->map(function (Silo $s) use ($ninetyDaysAgo) {
+                $ingresos = Ingreso::where('silo_destino', $s->nombre)
+                    ->whereBetween('updated_at', [$ninetyDaysAgo, now()])
+                    ->get();
+                $humedadPromedio = $ingresos->avg('humedad');
+                
+                return [
+                    'silo'      => $s->nombre,
+                    'cereal'    => $s->cereal ?? '—',
+                    'stock'     => $s->stock_actual_kg,
+                    'humedad'   => $humedadPromedio ?? 0,
+                    'capacidad' => $s->capacidad_kg,
+                    'disponible'=> $s->kg_disponibles,
+                    'estado'    => match ($s->estado) {
+                        'activo'        => 'Activo',
+                        'vacio'         => 'Vacío',
+                        'lleno'         => 'Lleno',
+                        'en_reparacion' => 'En reparación',
+                        default         => ucfirst($s->estado),
+                    },
+                    'ingresos'  => $ingresos,
+                ];
+            })->toArray(),
         ];
     }
 }
