@@ -36,6 +36,7 @@ class DetalleSilosWidget extends Widget
                     'humedad'   => $humedadPromedio ?? 0,
                     'capacidad' => $s->capacidad_kg,
                     'disponible'=> $s->kg_disponibles,
+                    'ajuste'    => ($s->ajuste ? \Carbon\Carbon::parse($s->ajuste)->format('d-m-Y') : '—'),
                     'estado'    => match ($s->estado) {
                         'activo'        => 'Activo',
                         'vacio'         => 'Vacío',

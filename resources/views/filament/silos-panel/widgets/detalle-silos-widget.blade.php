@@ -19,6 +19,7 @@
                         <th class="py-3 pr-4">Capacidad</th>
                         <th class="py-3 pr-4">Disponible</th>
                         <th class="py-3 pr-4">Estado</th>
+                        <th class="py-3 pr-4">Ultimo Ajuste</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-white/10">
@@ -35,6 +36,7 @@
                                     {{ $row['estado'] }}
                                 </span>
                             </td>
+                            <td class="py-3 pr-4">{{ $row['ajuste'] }}</td>
                         </tr>
                     @endforeach
                 </tbody>

@@ -53,7 +53,7 @@ class AjusteStockCeroWidget extends Widget implements HasForms
             return;
         }
 
-        $silo->update(['stock_actual_kg' => 0, 'estado' => 'vacio', 'cereal' => null, 'humedad' => null]);
+        $silo->update(['stock_actual_kg' => 0, 'estado' => 'vacio', 'cereal' => null, 'humedad' => null,'ajuste'=>now()]);
 
         Notification::make()
             ->title('Stock ajustado')
