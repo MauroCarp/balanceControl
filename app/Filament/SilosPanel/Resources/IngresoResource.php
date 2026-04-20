@@ -31,18 +31,24 @@ class IngresoResource extends Resource
                    'Girasol' => 'Girasol',
                    'Cebada' => 'Cebada',
                    'Sorgo' => 'Sorgo',
-                ]
-                )
+                ])
                 ->required()
-                ->searchable(),
+                ->searchable()
+                ->live(),
             Forms\Components\Select::make('silo_destino')
                 ->label('Silo destino')
-                ->options(
-                    Silo::orderBy('nombre')
+                ->options(function ($get) {
+                    $cultivo = $get('cultivo');
+
+                    return Silo::orderBy('nombre')
                         ->whereNotIn('estado', ['lleno', 'en_reparacion'])
+                        ->where(function ($query) use ($cultivo) {
+                            $query->where('estado', 'vacio')
+                                  ->orWhere('cereal', $cultivo);
+                        })
                         ->get()
-                        ->mapWithKeys(fn (Silo $s) => [$s->id => 'Silo ' . $s->nombre])
-                )
+                        ->mapWithKeys(fn (Silo $s) => [$s->id => 'Silo ' . $s->nombre]);
+                })
                 ->required()
                 ->searchable(),
             Forms\Components\TextInput::make('proveedor')

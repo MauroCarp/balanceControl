@@ -17,6 +17,15 @@ class Silo extends Model
         'humedad'        => 'float',
     ];
 
+    protected static function booted(): void
+    {
+        static::saving(function (Silo $silo) {
+            if ($silo->capacidad_kg > 0 && $silo->stock_actual_kg >= $silo->capacidad_kg) {
+                $silo->estado = 'lleno';
+            }
+        });
+    }
+
     public function getPorcentajeOcupacionAttribute(): float
     {
         if ($this->capacidad_kg === 0) {
