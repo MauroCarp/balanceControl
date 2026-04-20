@@ -21,6 +21,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\Grid as GridInfolist;
 use Filament\Infolists\Components\Group;
 use Illuminate\Support\Facades\DB;
+use App\Models\Silo;
 use Illuminate\Support\HtmlString;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -164,7 +165,25 @@ class PaihuenCerealesResource extends Resource
                                             'siloBolsa' => 'Silo Bolsa',
                                         ])
                                         ->required()
+                                        ->live()
                                         ->visible(fn ($get) => in_array($get('cereal'), ['Maiz', 'Soja', 'Cascara de mani'])),
+                                    Forms\Components\Select::make('silo_id')
+                                        ->label('Silo destino')
+                                        ->options(function ($get) {
+                                            $cereal = $get('cereal');
+
+                                            return Silo::orderBy('nombre')
+                                                ->whereNotIn('estado', ['lleno', 'en_reparacion'])
+                                                ->where(function ($query) use ($cereal) {
+                                                    $query->where('estado', 'vacio')
+                                                          ->orWhere('cereal', $cereal);
+                                                })
+                                                ->get()
+                                                ->mapWithKeys(fn (Silo $s) => [$s->id => 'Silo ' . $s->nombre]);
+                                        })
+                                        ->required()
+                                        ->searchable()
+                                        ->visible(fn ($get) => $get('destino') === 'plantaSilo'),
                                     Forms\Components\Textarea::make('observaciones')
                                         ->label('Observaciones')
                                         ->maxLength(400)
